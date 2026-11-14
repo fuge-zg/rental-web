@@ -361,19 +361,31 @@ function openUpload(d,replace){
 /* ===== filebin 云端中转：手机直传云端，电脑端任务自动下载进 H 盘 ===== */
 const FB_BIN="fugevideo";
 async function fbUpload(file,fname){const r=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(fname),{method:"PUT",body:file,headers:{"Content-Type":file.type||"video/mp4"}});if(!r.ok)throw new Error("HTTP "+r.status);return true}
-async function pushRegistry(){const vids=Object.values(VIDEOS).map(v=>({num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}));vids.sort((a,b)=>a.num.localeCompare(b.num));await fbPutRegistry({updated:new Date().toISOString(),videos:vids});localStorage.setItem("fuge_regpush",String(Date.now()))}
+async function pushRegistry(){
+  // 防覆盖保护：推送前先拉取云端登记表，把云端有而本地没有的记录合并回本地，
+  // 避免换域名/换设备/清缓存后本地 VIDEOS 缺失时，把云端完整视频库覆盖丢失
+  try{
+    const reg=await fbGetRegistry();
+    let added=0;
+    (reg.videos||[]).forEach(v=>{const k=vKey(v.bld,v.room);if(!VIDEOS[k]){VIDEOS[k]={num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"};added++}});
+    if(added)saveVideos();
+  }catch(e){}
+  const vids=Object.values(VIDEOS).map(v=>({num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}));vids.sort((a,b)=>a.num.localeCompare(b.num));await fbPutRegistry({updated:new Date().toISOString(),videos:vids});localStorage.setItem("fuge_regpush",String(Date.now()))}
 async function fbPutRegistry(reg){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{method:"PUT",body:JSON.stringify(reg),headers:{"Content-Type":"application/json"}});if(!r.ok)throw new Error("registry HTTP "+r.status)}
 async function fbGetRegistry(){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
 async function mergeRemoteRegistry(){
-  try{
-    const reg=await fbGetRegistry();
+  let reg=null;
+  for(let i=0;i<3&&!reg;i++){
+    try{reg=await fbGetRegistry()}catch(e){if(i<2)await new Promise(r=>setTimeout(r,1500))}
+  }
+  if(reg){
     (reg.videos||[]).forEach(v=>{const k=vKey(v.bld,v.room);if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}});
     saveVideos();
     // 每日自动续期：filebin 的 bin 超过6天没有上传会过期，重新推一次登记表保活，
     // 这样已归档视频在房号重上架时始终能从「富哥视频哈」/云端调取
     const last=+(localStorage.getItem("fuge_regpush")||0);
     if(Date.now()-last>20*3600*1000){try{await pushRegistry()}catch(e){}}
-  }catch(e){}
+  }
 }
 async function syncPendingCloud(silent){
   const keys=Object.keys(QUEUE);let ok=0;
