@@ -186,7 +186,7 @@ footer p{margin:3px 0}
    <button class="btn-book" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">📞 联系看房</button>
    <div class="bigbadge"><b id="statRooms2">0</b><span>套房在租</span></div>
   </div>
-   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · 更新 <b>__DATE__</b>　📍 深圳·龙华 · 共和花园 / 伍屋村</div>
+   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · <b id="statBld">0</b> 个分组 · 更新 <b>__DATE__</b>　📍 深圳·龙华 · 共和花园 / 伍屋村</div>
   <div class="search">
    <span class="mag">🔍</span>
    <input id="q" type="search" placeholder='搜索房号 / 价格区间，如「01」「1000-1600」' autocomplete="off">
