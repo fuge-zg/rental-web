@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>富哥房源 · 共和花园在租房源</title>
+<style>
+:root{--teal:#0F8577;--teal-d:#0B6E63;--bg:#F1F5F3;--card:#fff;--ink:#22302C;--sub:#7A8C86;--line:#E2EAE7;--orange:#E8833A;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:740px;margin:0 auto;padding:0 12px 40px}
+header{background:linear-gradient(160deg,#109183,var(--teal-d));border-radius:0 0 18px 18px;padding:18px 16px 16px;color:#fff;box-shadow:0 6px 18px rgba(15,133,119,.25)}
+.hrow{display:flex;align-items:center;gap:10px}
+.logo{font-size:22px}
+h1{font-size:21px;font-weight:700;letter-spacing:.5px}
+.btn-book{margin-left:auto;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.75);color:#fff;border-radius:10px;padding:7px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn-book:hover{background:rgba(255,255,255,.28)}
+.stats{font-size:12.5px;opacity:.92;margin-top:6px}
+.stats b{font-size:14px}
+.bigbadge{margin-left:10px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.72);border-radius:12px;padding:5px 14px;text-align:center;flex-shrink:0}
+.bigbadge b{display:block;font-size:21px;line-height:1.15}
+.bigbadge span{font-size:11px;opacity:.92}
+.search{margin-top:12px;position:relative}
+.search input{width:100%;border:none;border-radius:12px;padding:12px 86px 12px 40px;font-size:14.5px;outline:none;color:var(--ink);background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.search .mag{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5}
+.search .clr{position:absolute;right:52px;top:50%;transform:translateY(-50%);border:none;background:#Eef2f1;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#667;font-size:13px;display:none}
+.sharebtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:none;background:#EAF2F0;color:var(--teal-d);font-size:17px;cursor:pointer}
+.sharebtn:hover{background:#DCEBE8}
+.hint{font-size:12px;opacity:.9;margin-top:9px}
+.hint .kw{background:rgba(255,255,255,.18);border-radius:6px;padding:1px 7px;margin:0 2px;font-weight:600}
+.toggle2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.toggle2 button{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.55);color:#fff;border-radius:11px;padding:9px 0;font-size:14px;cursor:pointer}
+.toggle2 button.on{background:#fff;color:var(--teal-d);font-weight:700;border-color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:6px 15px;font-size:13.5px;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:600}
+.row2{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 2px;font-size:12.5px}
+.row2 .lbl{color:var(--sub);padding:5px 2px}
+.row2 select{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--ink);outline:none;cursor:pointer}
+.found{color:var(--sub);font-size:13px;margin:10px 2px 12px}
+.found b{color:var(--orange);font-size:15px}
+.found i{color:var(--teal);font-style:normal;font-weight:700}
+.card{background:var(--card);border-radius:14px;padding:14px 14px 12px;margin-bottom:12px;box-shadow:0 2px 10px rgba(30,60,55,.06)}
+.chead{display:flex;align-items:center;gap:8px}
+.chead h2{font-size:16.5px;font-weight:700}
+.cbadge{font-size:12px;color:var(--teal-d);background:#E5F3F0;border-radius:8px;padding:2px 8px;white-space:nowrap}
+.copy{margin-left:auto;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;color:var(--sub);cursor:pointer}
+.copy:hover{color:var(--teal);border-color:var(--teal)}
+.cnote{font-size:12px;color:var(--sub);margin-top:6px}
+.util{font-size:12px;color:#41615A;margin-top:4px;font-weight:600}
+.grp{margin-top:10px}
+.glabel{font-size:12px;color:var(--sub);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.glabel::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.room{background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:9px 4px 7px;text-align:center;cursor:pointer;transition:.15s;position:relative}
+.room:hover{border-color:var(--teal);box-shadow:0 3px 10px rgba(15,133,119,.15);transform:translateY(-1px)}
+.room .rn{font-size:16px;font-weight:700;letter-spacing:.5px}
+.room .rp{color:var(--orange);font-size:13px;font-weight:700;margin-top:2px}
+.room .rp.na{color:#AAB6B2;font-weight:500;font-size:12px}
+.room .plus{position:absolute;left:6px;bottom:3px;font-size:12px;color:#A8B8B3;font-weight:700;cursor:pointer}
+.room .plus:hover{color:var(--teal)}
+.room .vtag{position:absolute;right:6px;bottom:3px;font-size:12px}
+.room .vplay{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:#12A594;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.22)}
+.room .vrep{position:absolute;right:5px;bottom:3px;font-size:13px;color:#5B8A83;cursor:pointer}
+.room .mgf{font-size:11px;color:var(--sub);margin-top:1px}
+.room.hi{background:#FFF8D6;border-color:#EFD98B}
+.legend{font-size:12px;color:var(--sub);margin:2px 2px 10px}
+#vplayer{position:fixed;inset:0;background:#000;z-index:120;display:flex;flex-direction:column}
+.qbtn{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.qbtn.primary{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:600}
+.qbtn.primary:hover{background:var(--teal-d)}
+.qbtn.gray{background:#5B6B66;border-color:#5B6B66;color:#fff;font-weight:600}
+.room .tagdot{position:absolute;top:5px;right:6px;font-size:9px;color:#fff;background:var(--orange);border-radius:6px;padding:0 4px}
+.empty{color:var(--sub);font-size:12.5px;background:#F6F9F8;border:1.5px dashed var(--line);border-radius:10px;padding:10px;text-align:center;margin-top:10px}
+footer{margin-top:18px;font-size:12px;color:var(--sub)}
+footer .card{padding:14px}
+footer h3{font-size:13.5px;color:var(--ink);margin-bottom:6px}
+footer p{margin:3px 0}
+.modal{position:fixed;inset:0;background:rgba(15,40,35,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.open{display:flex}
+.mcard{background:#fff;width:100%;max-width:460px;border-radius:16px 16px 0 0;padding:18px 18px 22px;max-height:86vh;overflow:auto}
+@media(min-width:560px){.modal{align-items:center}.mcard{border-radius:16px}}
+.mhead{display:flex;align-items:center;margin-bottom:10px}
+.mhead h3{font-size:17px}
+.mclose{margin-left:auto;border:none;background:#EEF2F1;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:#567}
+.mrow{display:flex;border-bottom:1px dashed var(--line);padding:8px 0;font-size:14px}
+.mrow .k{width:78px;color:var(--sub);flex-shrink:0}
+.mrow .v{flex:1;font-weight:600}
+.mrow .v.price{color:var(--orange);font-size:17px}
+.mrow .v.plain{font-weight:400;color:var(--ink)}
+#toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%);background:rgba(30,45,42,.92);color:#fff;font-size:13px;border-radius:20px;padding:8px 18px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+ <div class="wrap" style="padding-bottom:0">
+  <div class="hrow">
+   <span class="logo">🏠</span><h1>富哥房源</h1>
+   <button class="btn-book" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">📅 预约看房</button>
+   <div class="bigbadge"><b id="statRooms2">0</b><span>套房在租</span></div>
+  </div>
+   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · <b id="statBld">0</b> 个楼栋 · 更新 <b>2026-11-14</b>　📍 深圳·龙华 · 共和花园 / 伍屋村</div>
+  <div class="search">
+   <span class="mag">🔍</span>
+   <input id="q" type="search" placeholder='搜索栋号 / 房号 / 价格区间，如「17栋」「01」「1000-1600」' autocomplete="off">
+   <button class="clr" id="clr">✕</button>
+   <button class="sharebtn" id="share" title="复制本页链接，发给客户">✎</button>
+  </div>
+  <div class="hint">💡 预算可直接搜区间：<span class="kw">单间 1000-1600</span> 或 <span class="kw">1000至1600</span></div>
+   <div class="toggle2" id="floorBtns">
+    <button data-v="all" class="on">（全部房源）</button>
+    <button data-v="电梯">（电梯房）</button>
+    <button data-v="楼梯">（楼梯房）</button>
+   </div>
+  </div>
+ </header>
+ <div class="wrap">
+  <div class="chips" id="catChips"></div>
+  <div class="row2">
+   <span class="lbl">盘口</span>
+   <select id="park">
+    <option value="all">全部</option>
+    <option value="共和花园">共和花园</option>
+    <option value="伍屋村">伍屋村</option>
+    <option value="其他">其他盘口</option>
+   </select>
+   <span class="lbl">预算</span>
+   <select id="budget">
+    <option value="all">不限</option>
+    <option value="0-1000">1000以下</option>
+    <option value="1000-1500">1000-1500</option>
+    <option value="1500-2000">1500-2000</option>
+    <option value="2000-99999">2000以上</option>
+   </select>
+   <span class="lbl">楼型</span>
+   <select id="floorSel">
+    <option value="all">全部</option>
+    <option value="电梯">电梯</option>
+    <option value="楼梯">楼梯</option>
+   </select>
+   <span class="lbl">排序</span>
+   <select id="sort">
+    <option value="def">默认</option>
+    <option value="asc">价格低→高</option>
+    <option value="desc">价格高→低</option>
+   </select>
+  </div>
+ <div class="found">找到 <b id="cnt">0</b> 套房源 · 分布在 <i id="cntB">0</i> 栋</div>
+ <div class="legend">🟡 黄色房号 = 10-30层高层房源　▶ = 有房间实拍视频（点▶直接看）　↻ = 替换视频　＋ = 上传视频</div>
+ <div id="list"></div>
+ <footer id="about">
+  <div class="card">
+   <h3>📅 预约看房</h3>
+   <p>看房请直接联系对应楼栋的招租管家/房东（联系电话见各楼栋说明），或到店咨询。带看均有红包，成交结佣秒到。</p>
+  </div>
+  <div class="card">
+   <h3>📌 数据说明</h3>
+    <p>· 数据为各楼栋微信群最后一次发布的房源信息（更新于 2026-11-14）</p>
+   <p>· 已按规则剔除已租房源：房号标红、划线标记、标注“已租/已定/已签”的均不展示</p>
+   <p>· 销控表绿/紫/白底＝在租；空白字段＝原信息未标注</p>
+   <p>· 房源实拍图/视频暂未收录，可联系对应楼栋管家获取</p>
+   <p>· 房号视频：点房号左下角＋拍摄/相册上传，自动编号（01起）进「富哥视频哈」，▶直接播放，↻替换；房号下架后视频编号不变自动归档保留，重新上架时自动挂回原视频，无需重拍</p>
+   <p>· 房态实时变动，订房前请与管家确认</p>
+  </div>
+ </footer>
+</div>
+<div class="modal" id="modal"><div class="mcard" id="mcard"></div></div>
+<div id="toast">已复制</div>
+<script>
+const DATA = [{"b": "共和花园103栋", "src": "万佳·电梯公寓", "time": "11-11 22:10", "note": "管理费：单房100、一房一厅/两房一厅150；可养小型宠物；佣金秒结", "rooms": [{"t": "特价单房（带空中花园）", "r": "1102", "p": 1050, "m": "100", "f": "电梯", "tag": "特价"}, {"t": "中单房", "r": "906", "p": 1200, "m": "100", "f": "电梯"}, {"t": "中单房", "r": "406", "p": 1180, "m": "100", "f": "电梯"}, {"t": "大单房", "r": "309", "p": 1380, "m": "100", "f": "电梯"}, {"t": "大单房", "r": "709", "p": 1380, "m": "100", "f": "电梯"}, {"t": "大单间+书房", "r": "410", "p": 1450, "m": "100", "f": "电梯"}, {"t": "特价大单间+书房", "r": "210", "p": 1300, "m": "100", "f": "电梯", "tag": "特价"}, {"t": "二房一厅", "r": "507", "p": 2380, "m": "150", "f": "电梯"}, {"t": "特价二房一厅", "r": "302", "p": 2200, "m": "150", "f": "电梯", "tag": "特价"}]}, {"b": "共和花园104栋（壹品公寓）", "src": "图片价目表", "time": "11-12 16:07", "note": "押二付一；价目表未标注户型", "rooms": [{"t": "未标注", "r": "1001", "p": 1100, "m": "100", "c": "5", "h": "38", "e": "0.9", "f": "电梯"}, {"t": "未标注", "r": "608", "p": 1450, "m": "100", "c": "5", "h": "38", "e": "0.9", "f": "电梯"}, {"t": "未标注", "r": "404", "p": 1300, "m": "100", "c": "5", "h": "38", "e": "0.9", "f": "电梯"}, {"t": "未标注", "r": "402", "p": 1600, "m": "100", "c": "5", "h": "38", "e": "0.9", "f": "电梯"}, {"t": "铺面", "r": "铺面", "p": 1300, "m": "100", "c": "5", "h": "38", "e": "0.9", "f": "电梯"}]}, {"b": "共和花园110栋", "src": "宜居管家", "time": "11-14 09:56", "note": "管理费100；8个月起租；一房/两房已通天然气；705已租已剔除", "rooms": [{"t": "大单间", "r": "805", "p": 1550, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "一房一厅", "r": "1505", "p": 2300, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "大两房一厅", "r": "402", "p": 2680, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "一楼房间", "r": "104", "p": 1480, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯", "tag": "可摆摊/仓库"}]}, {"b": "共和花园111栋（雅居公寓）", "src": "谢永胜", "time": "11-14 11:53", "note": "水电未标注；房间密码123109#；1309已定（11-13）已剔除", "rooms": [{"t": "大单间", "r": "8507", "p": 1480}, {"t": "大二房一厅", "r": "8210", "p": 2380}, {"t": "大二房一厅", "r": "8410", "p": 2480}]}, {"b": "共和花园114栋", "src": "群文字招租", "time": "11-14 09:26", "note": "管理费100；价格可商量；押一付一0.8佣或+500全佣", "rooms": [{"t": "一房一厅", "r": "206", "p": 1600, "m": "100", "c": "6", "e": "1", "f": "电梯"}]}, {"b": "共和花园115栋", "src": "图片销控表", "time": "11-11 16:10", "note": "管理费100；押二付一：一年全佣/半年半佣；304已租已剔除", "rooms": [{"t": "一房一厅", "r": "201", "p": 1580, "m": "100", "c": "6", "e": "1.2"}]}, {"b": "共和花园120栋（C1）", "status": "full", "src": "群文字", "time": "11-07 19:16", "note": "房东确认满房，暂无在租（最后发布10-05：单间604、805各1200）", "rooms": []}, {"b": "共和花园12栋", "src": "宜居公寓", "time": "11-14 09:56", "note": "管理费100；8个月起租；所有房号密码111222#", "rooms": [{"t": "一房一厅", "r": "903", "p": 1900, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}]}, {"b": "共和花园15栋", "src": "一手房东", "time": "11-12 17:04", "note": "价格含管理费；民水民电（单价未标注）", "rooms": [{"t": "单间", "r": "505", "p": 1100, "m": "已含"}, {"t": "两房一厅", "r": "701", "p": 2200, "m": "已含", "tag": "精装修，拎包入住"}]}, {"b": "共和花园17栋", "src": "深冠公寓", "time": "11-14 11:04", "note": "管理费100；楼梯房；大门刷卡进入；604已定已剔除", "rooms": [{"t": "单间", "r": "303", "p": 1480, "m": "100", "c": "5.5", "e": "0.86", "f": "楼梯"}, {"t": "特价房（包管理）", "r": "404", "p": 1350, "m": "已含", "c": "5.5", "e": "0.86", "f": "楼梯", "tag": "特价"}, {"t": "两房一厅", "r": "902", "p": 2280, "m": "100", "c": "5.5", "e": "0.86", "f": "楼梯"}]}, {"b": "共和花园18栋", "src": "李房东", "time": "11-07 17:11", "note": "水6电1.2；押二付一；一年全佣", "rooms": [{"t": "两房一厅", "r": "305", "p": 2000, "c": "6", "e": "1.2", "f": "电梯"}]}, {"b": "共和花园1栋", "src": "现代公寓锦绣154群", "time": "11-14 00:49", "note": "管理费100；电1水5；全佣；可短租可谈价；1304已定已剔除、904已移出清单", "rooms": [{"t": "一房一厅", "r": "303", "p": 1700, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "502", "p": 1780, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "901", "p": 1700, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "401", "p": 1700, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "1101", "p": 1700, "m": "100", "c": "5", "e": "1"}]}, {"b": "共和花园21栋", "src": "Go_oD", "time": "11-14 11:26", "note": "包管理；水5电1；电梯房带管道燃气；半年起租，定金800起", "rooms": [{"t": "单间（特价）", "r": "401", "p": 1050, "m": "包", "c": "5", "e": "1", "f": "电梯", "tag": "特价·安静舒适"}, {"t": "一室一厅", "r": "502", "p": 1650, "m": "包", "c": "5", "e": "1", "f": "电梯", "tag": "厨卫分离"}]}, {"b": "共和花园24栋（拾光小筑）", "src": "海陆空", "time": "11-06 11:39", "note": "水5.5电1；禁养狗、电动车及电池上楼", "rooms": [{"t": "小单间", "r": "405", "p": 1300, "c": "5.5", "e": "1"}, {"t": "一房一厅", "r": "502", "p": 1880, "c": "5.5", "e": "1"}, {"t": "两房一厅", "r": "601", "p": 2280, "m": "已含", "c": "5.5", "e": "1"}]}, {"b": "共和花园32栋", "src": "图片价目表", "time": "11-14 11:57", "note": "管理费100；押一付一0.7佣/+500全佣/押二付一1.2佣；床垫可换新；11-14重发价目表（低清缩略图识图与11-12版一致）", "rooms": [{"t": "单间", "r": "502", "p": 980, "m": "100", "c": "5.5", "e": "0.98", "f": "电梯"}, {"t": "单间", "r": "202", "p": 980, "m": "100", "c": "5.5", "e": "0.98", "f": "电梯"}, {"t": "单间", "r": "402", "p": 1080, "m": "100", "c": "5.5", "e": "0.98", "f": "电梯"}, {"t": "一房一厅", "r": "401", "p": 1380, "m": "100", "c": "5.5", "e": "0.98", "f": "电梯"}, {"t": "两房一厅", "r": "103", "p": 1580, "m": "100", "c": "5.5", "e": "0.98", "f": "电梯"}, {"t": "两房一厅", "r": "一楼A4", "p": 1580, "m": "100", "c": "5.5", "e": "0.98", "f": "电梯"}]}, {"b": "共和花园55栋", "src": "55栋管理员", "time": "11-13 11:20", "note": "管理费100；联系19849572515", "rooms": [{"t": "单间", "r": "309", "p": 1230, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "706", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "802", "p": 1220, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "808", "p": 1080, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "912", "p": 1250, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "1506", "p": 1250, "m": "100", "c": "6", "e": "1.2"}, {"t": "一房一厅", "r": "804", "p": 1550, "m": "100", "c": "6", "e": "1.2"}, {"t": "一房一厅", "r": "603", "p": 1630, "m": "100", "c": "6", "e": "1.2"}]}, {"b": "共和花园58栋（璟尚居）", "src": "图片销控表", "time": "10-11 10:59", "note": "管理费单间100；押二付一；305已租、708标红已剔除；该群10-23后无新消息", "rooms": [{"t": "单间", "r": "306", "p": 1780, "m": "100", "c": "6.5", "h": "36", "e": "0.86", "tag": "在租（白底空房）"}]}, {"b": "共和花园61栋", "src": "现代公寓锦绣154群", "time": "11-14 00:49", "note": "管理费100；电1水5；全佣；可短租可谈价", "rooms": [{"t": "一房一厅", "r": "305", "p": 1900, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "302", "p": 1900, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "402", "p": 1980, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "602", "p": 2080, "m": "100", "c": "5", "e": "1"}, {"t": "一房一厅", "r": "603", "p": 1800, "m": "100", "c": "5", "e": "1"}]}, {"b": "共和花园66栋", "src": "肖勇", "time": "11-08 09:19", "note": "管理费100；押二付一，半年起租、半佣；水电单价未标注", "rooms": [{"t": "单房", "r": "未标注", "p": 1100, "m": "100", "f": "电梯", "tag": "最新版未标房号"}, {"t": "一房一厅", "r": "207", "p": 1600, "m": "100", "f": "电梯"}, {"t": "一房一厅", "r": "1007", "p": 1600, "m": "100", "f": "电梯"}, {"t": "一房一厅", "r": "301", "p": 1900, "m": "100", "f": "电梯"}, {"t": "一房一厅", "r": "501", "p": 1900, "m": "100", "f": "电梯"}, {"t": "两房一厅", "r": "306", "p": 2500, "m": "100", "f": "电梯"}, {"t": "两房一厅", "r": "606", "p": 2500, "m": "100", "f": "电梯"}, {"t": "两房一厅", "r": "806", "p": 2500, "m": "100", "f": "电梯"}]}, {"b": "共和花园72栋", "src": "手写价目表（胡杏娥）", "time": "11-13 20:03", "note": "「+100」为管理费，207/206为1000包管理费；402划线已剔除、403移出清单；水电未标注", "rooms": [{"t": "大一房", "r": "1111", "p": 1550, "m": "100", "tag": "特价"}, {"t": "大", "r": "1001", "p": 1880, "m": "100", "tag": "特价·不讨价还价"}, {"t": "大", "r": "1107", "p": 1880, "m": "100", "tag": "特价·不讨价还价"}, {"t": "未标注", "r": "808", "p": 1050, "m": "100", "tag": "特价"}, {"t": "未标注", "r": "712", "p": 1050, "m": "100", "tag": "特价"}, {"t": "未标注", "r": "605", "p": 1050, "m": "100", "tag": "特价"}, {"t": "未标注", "r": "515", "p": 1050, "m": "100", "tag": "特价"}, {"t": "未标注", "r": "406", "p": 1000, "m": "100", "tag": "特价"}, {"t": "未标注", "r": "207", "p": 1000, "m": "包管理"}, {"t": "未标注", "r": "206", "p": 1000, "m": "包管理"}]}, {"b": "共和花园74栋（暖居公寓）", "src": "图片销控表", "time": "11-14 12:00", "note": "押1付1，一年一佣、半年半佣；表内无已租标记；607黄底含义未标明（11-14销控表与11-12版一致）", "rooms": [{"t": "一房", "r": "607", "p": 1730, "m": "100", "tag": "总租金1830"}, {"t": "单间", "r": "1001", "p": 1100, "m": "100", "tag": "总租金1200；楼层高"}, {"t": "单间", "r": "405", "p": 1150, "m": "100", "tag": "总租金1250；采光好"}, {"t": "单间", "r": "402", "p": 1100, "m": "100", "tag": "总租金1200；阳台，厨卫独立"}, {"t": "特价单间", "r": "612", "p": 1000, "m": "100", "tag": "特价；总租金1100"}, {"t": "特价单间", "r": "206", "p": 1050, "m": "100", "tag": "特价；总租金1150"}]}, {"b": "共和花园88栋", "src": "群文字招租", "time": "11-09 20:45", "note": "管理费100；押二付一，半年起租、半佣（一年全佣）；联系13751135251", "rooms": [{"t": "单间", "r": "201", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "210", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "405", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "610", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "802", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "单间", "r": "909", "p": 1000, "m": "100", "c": "6", "e": "1.2"}, {"t": "一房一厅", "r": "408", "p": 1400, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "304", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "307", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "404", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "407", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "504", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "607", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "707", "p": 2300, "m": "100", "c": "6", "e": "1.2"}, {"t": "两房一厅", "r": "1004", "p": 2300, "m": "100", "c": "6", "e": "1.2"}]}, {"b": "共和花园90栋", "src": "图片销控表", "time": "11-14 09:34", "note": "管理费100；网络100元/月；门密码138168#；谈价联系17770337547；配文“降价了，所有房子都可包管理”；308备注格已转绿底，按在租恢复录入", "rooms": [{"t": "一房一厅", "r": "308", "p": 2180, "m": "100", "c": "6", "e": "1.2", "tag": "绿底在租"}, {"t": "单间（样板间）", "r": "901", "p": 1680, "m": "100", "c": "6", "e": "1.2", "tag": "样板间（绿底）"}, {"t": "一房一厅（样板间）", "r": "909", "p": 2380, "m": "100", "c": "6", "e": "1.2", "tag": "样板间（绿底）"}, {"t": "一房一厅（样板间）", "r": "1102", "p": 2380, "m": "100", "c": "6", "e": "1.2", "tag": "样板间（绿底）"}, {"t": "一房一厅（样板间）", "r": "1409", "p": 2400, "m": "100", "c": "6", "e": "1.2", "tag": "样板间（绿底）"}]}, {"b": "共和花园92栋", "src": "群主问答", "time": "10-27 12:22", "note": "租金未标注（信息缺失）；302已租已剔除", "rooms": [{"t": "单间", "r": "210", "p": null, "f": "电梯"}, {"t": "一房一厅", "r": "301", "p": null, "f": "电梯"}]}, {"b": "共和花园97栋（318公寓）", "src": "丽莎", "time": "11-13 16:45", "note": "不短租；冷水5热水38电0.96；网络100元/月；退房卫生费150；密码256689；519已租剔除", "rooms": [{"t": "单间", "r": "326", "p": 1400, "m": "100", "c": "5", "h": "38", "e": "0.96"}, {"t": "单间", "r": "426", "p": 1400, "m": "100", "c": "5", "h": "38", "e": "0.96"}, {"t": "单间", "r": "812", "p": 1500, "m": "100", "c": "5", "h": "38", "e": "0.96"}, {"t": "大单间", "r": "319", "p": 1500, "m": "100", "c": "5", "h": "38", "e": "0.96"}, {"t": "大单间", "r": "721", "p": 1600, "m": "100", "c": "5", "h": "38", "e": "0.96"}, {"t": "一房一厅", "r": "918", "p": 2200, "m": "150", "c": "5", "h": "38", "e": "0.96"}]}, {"b": "共和花园9栋", "src": "宜居公寓", "time": "11-14 09:56", "note": "管理费100；8个月起租；所有房号密码111222#", "rooms": [{"t": "单间", "r": "305", "p": 1400, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "一房一厅", "r": "402", "p": 1800, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "一房一厅", "r": "303", "p": 1800, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "一房一厅", "r": "203", "p": 1750, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯", "tag": "特价"}, {"t": "商铺", "r": "一楼理发店", "p": 2100, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}]}, {"b": "共和花园美树大厦（宜居公寓）", "src": "宜居公寓孔美英", "time": "11-14 09:55", "note": "管理费100；网络100可选；押二付一（全佣）/押1.5（0.8佣）；密码666888#；狗不能养", "rooms": [{"t": "小单间", "r": "918", "p": 1480, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "单间", "r": "903", "p": 1680, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯"}, {"t": "单间", "r": "816", "p": 1650, "m": "100", "c": "6", "e": "0.7+0.5", "f": "电梯", "tag": "卫生已搞好"}]}, {"b": "共和花园65栋", "status": "na", "src": "东豪．冠豪．鸿豪．泽豪公寓中介群", "time": "11-14 10:22", "note": "指定群最新三张价目表（油园新村14栋/碧波花园C2栋/共和新村C区201栋）未标注本栋房号归属（信息缺失）", "rooms": []}, {"b": "共和花园123栋", "status": "na", "src": "东豪．冠豪．鸿豪．泽豪公寓中介群", "time": "11-14 10:22", "note": "指定群最新三张价目表未标注本栋房号归属（信息缺失）", "rooms": []}, {"b": "云梦家公寓", "src": "图片价目表", "time": "11-13 11:46", "note": "管理费150；网费50；押二付一：一年0.9佣/半年0.4佣；定金1000/间；禁养宠物；户型未标注", "rooms": [{"t": "未标注", "r": "402", "p": 2300, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "407", "p": 2280, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "408", "p": 2400, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "507", "p": 2300, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "509", "p": 2400, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "607", "p": 2300, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "705", "p": 2200, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "708", "p": 2700, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "909", "p": 1500, "m": "150", "c": "5", "h": "35", "e": "0.7"}, {"t": "未标注", "r": "1109", "p": 1600, "m": "150", "c": "5", "h": "35", "e": "0.7"}]}, {"b": "伍屋村·铂悦公馆（电梯）", "park": "伍屋村", "src": "图片销控表（Mr_凡哥）", "time": "11-13 13:15", "note": "全佣无服务费；管理费100、网络100元/月（100兆光纤）；水7元/方、电0.98元/度（工业水电）；押1.5年签全佣、押二付一年签1.1佣；样板房在7楼；户户带阳台；密码666888#；定房谈价结佣找凡哥13828776017；其余146间红底已签已剔除", "rooms": [{"t": "大单间", "r": "529", "p": 1780, "m": "100", "c": "7", "e": "0.98", "f": "电梯", "tag": "白底空房"}, {"t": "小单间", "r": "518", "p": 1380, "m": "100", "c": "7", "e": "0.98", "f": "电梯", "tag": "白底空房"}]}];
+const state = {cat:"全部户型", floor:"all", park:"all", budget:"all", sort:"def", q:""};
+const CATEGORIES = ["全部户型","单间","大单间","一房一厅","两房一厅","三房一厅","其他"];
+function catOf(t){
+  if(!t) return "其他";
+  if(t.includes("三房")) return "三房一厅";
+  if(t.includes("两房")||t.includes("二房")) return "两房一厅";
+  if(t.includes("大单")) return "大单间";
+  if(t.includes("一房")||t.includes("一室")) return "一房一厅";
+  if(t.includes("单")) return "单间";
+  return "其他";
+}
+const ICON={"单间":"🛏️","大单间":"🛌","一房一厅":"🏠","两房一厅":"🏡","三房一厅":"🏘️","其他":"📦"};
+function parkOf(b){return b.park||(b.b.startsWith("共和花园")?"共和花园":"其他")}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function parseTokens(q){
+  return q.trim().split(/\s+/).filter(Boolean).map(tok=>{
+    const m=tok.match(/^(\d{3,5})\s*(?:[-~至到]\s*(\d{3,5}))?$/);
+    if(m&&m[2]) return {type:"range",lo:+m[1],hi:+m[2]};
+    return {type:"text",v:tok.toLowerCase()};
+  });
+}
+function roomMatch(r,bname,toks){
+  const price = typeof r.p==="number"?r.p:null;
+  for(const tk of toks){
+    if(tk.type==="range"){
+      if(price===null||price<tk.lo||price>tk.hi) return false;
+    }else{
+      const v=tk.v;
+      const hay=(bname+" "+r.r+" "+r.t+" "+(r.tag||"")).toLowerCase();
+      if(!hay.includes(v)) return false;
+    }
+  }
+  return true;
+}
+function render(){
+  const toks=parseTokens(state.q);
+  const totalRooms=DATA.reduce((s,b)=>s+b.rooms.length,0);
+  const totalB=DATA.filter(b=>b.rooms.length>0).length;
+  document.getElementById("statRooms").textContent=totalRooms;
+  document.getElementById("statRooms2").textContent=totalRooms;
+  document.getElementById("statBld").textContent=totalB;
+  let html="",cnt=0,cntB=0;
+  for(const b of DATA){
+    if(state.park!=="all"&&parkOf(b)!==state.park) continue;
+    let rooms=b.rooms.filter(r=>{
+      if(state.cat!=="全部户型"&&catOf(r.t)!==state.cat) return false;
+      if(state.floor!=="all"&&(r.f||"").indexOf(state.floor)<0) return false;
+      if(state.budget!=="all"){const bp=typeof r.p==="number"?r.p:null;if(bp===null)return false;const pr=state.budget.split("-").map(Number);if(bp<pr[0]||bp>=pr[1])return false;}
+      if(toks.length&&!roomMatch(r,b.b,toks)) return false;
+      return true;
+    });
+    if(state.sort==="asc") rooms=[...rooms].sort((a,b2)=>(a.p??1e9)-(b2.p??1e9));
+    if(state.sort==="desc") rooms=[...rooms].sort((a,b2)=>(b2.p??-1)-(a.p??-1));
+    if(b.rooms.length===0){
+      if(toks.length) continue;
+      const label=b.status==="full"?"🏙️ 满房":"❓ 信息缺失";
+      html+=`<div class="card"><div class="chead"><h2>${esc(b.b)}</h2><span class="cbadge">${label}</span></div><div class="cnote">${esc(b.note)}</div><div class="empty">暂无可展示的在租房源</div></div>`;
+      continue;
+    }
+    if(rooms.length===0) continue;
+    cnt+=rooms.length;cntB++;
+    const uc=b.rooms.find(r=>r.c), uh=b.rooms.find(r=>r.h), ue=b.rooms.find(r=>r.e);
+    const uparts=[];
+    if(uc) uparts.push("冷水"+uc.c);
+    if(uh) uparts.push("热水"+uh.h);
+    if(ue) uparts.push("电"+ue.e);
+    const util=uparts.length? "💧 水电："+uparts.join(" · ")+"（水/热水：元每吨，电：元每度）" : "💧 水电：未标注";
+    const groups={};
+    rooms.forEach(r=>{(groups[catOf(r.t)] ||= []).push(r)});
+    const roomKey=r=>{const m=String(r.r).match(/^(\d{1,6})/);return m?+m[1]:null};
+    Object.values(groups).forEach(arr=>arr.sort((a,b2)=>{
+      const ka=roomKey(a),kb=roomKey(b2);
+      if(ka!==null&&kb!==null) return ka-kb;
+      if(ka!==null) return -1;
+      if(kb!==null) return 1;
+      return 0;
+    }));
+    let body="";
+    for(const g of Object.keys(groups)){
+      body+=`<div class="grp"><div class="glabel">${ICON[g]||"📦"} ${g} · ${groups[g].length}套</div><div class="grid">`;
+      for(const r of groups[g]){
+        const p = typeof r.p==="number"? r.p+"元" : "价格未标";
+        const na = typeof r.p==="number"?"":" na";
+        const mg = r.m ? (["已含","包","包管理"].includes(r.m) ? "已含管理费" : (/^[0-9]/.test(r.m) ? "管理费"+r.m : "管理费"+r.m)) : "管理费未标";
+        const tag = /特价|已含|包/.test((r.tag||"")+(r.m||""))?'<span class="tagdot">惠</span>':"";
+        const rk=roomKey(r);
+        const hic=rk!==null&&rk>=1000?" hi":"";
+        const hasV=!!VIDEOS[vKey(b.b,r.r)];
+        const vtag=hasV?'<span class="vplay" title="播放房间视频">▶</span><span class="vrep" title="替换视频">↻</span>':"";
+        body+=`<div class="room${hic}" data-b="${esc(b.b)}" data-r="${esc(r.r)}" data-t="${esc(r.t)}" data-p="${r.p??"未标注"}" data-m="${esc(r.m||"未标注")}" data-c="${esc(r.c||"未标注")}" data-h="${esc(r.h||"未标注")}" data-e="${esc(r.e||"未标注")}" data-f="${esc(r.f||"未标注")}" data-tag="${esc(r.tag||"—")}" data-src="${esc(b.src||"—")} ${esc(b.time||"")}">${tag}<span class="plus" title="上传视频（拍摄/相册）">+</span>${vtag}<div class="rn">${esc(r.r)}</div><div class="rp${na}">${p}</div><div class="mgf">${esc(mg)}</div></div>`;
+      }
+      body+="</div></div>";
+    }
+    html+=`<div class="card"><div class="chead"><h2>${esc(b.b)}</h2><span class="cbadge">${rooms.length} 套</span><button class="copy" data-copy="${esc(b.b)}">复制</button></div><div class="cnote">${esc(b.note)}</div><div class="util">${esc(util)}</div>${body}</div>`;
+  }
+  document.getElementById("list").innerHTML=html||`<div class="card"><div class="empty">没有匹配的房源，换个关键词试试～</div></div>`;
+  document.getElementById("cnt").textContent=cnt;
+  document.getElementById("cntB").textContent=cntB;
+  document.querySelectorAll(".room").forEach(el=>el.addEventListener("click",()=>openModal(el.dataset)));
+  document.querySelectorAll(".room .plus").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();openUpload(el.closest(".room").dataset,false)}));
+  document.querySelectorAll(".room .vplay").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();const rd=el.closest(".room").dataset;openVideoViewer(rd.b,rd.r)}));
+  document.querySelectorAll(".room .vrep").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();openUpload(el.closest(".room").dataset,true)}));
+  document.querySelectorAll(".copy").forEach(el=>el.addEventListener("click",()=>copyBld(el.dataset.copy)));
+}
+function openModal(d){
+  const price = d.p==="未标注"?'<span class="v plain">价格未标注（信息缺失）</span>':`<span class="v price">${esc(d.p)} 元/月</span>`;
+  const cur=VIDEOS[vKey(d.b,d.r)];
+  const vrow=cur?`<div class="mrow"><span class="k">房间视频</span><span class="v"><a href="#" id="playv" style="color:var(--teal);text-decoration:none">▶ 播放 ${esc(cur.file)}（编号${cur.num}）</a></span></div>`:"";
+  document.getElementById("mcard").innerHTML=`
+   <div class="mhead"><h3>${esc(d.b)}</h3><button class="mclose" onclick="document.getElementById('modal').classList.remove('open')">✕</button></div>
+   <div class="mrow"><span class="k">户型</span><span class="v">${esc(d.t)}</span></div>
+   <div class="mrow"><span class="k">房号</span><span class="v">${esc(d.r)}</span></div>
+   <div class="mrow"><span class="k">月租金</span>${price}</div>
+   <div class="mrow"><span class="k">管理费</span><span class="v">${esc(d.m)}</span></div>
+   <div class="mrow"><span class="k">冷水</span><span class="v">${esc(d.c)}</span></div>
+   <div class="mrow"><span class="k">热水</span><span class="v">${esc(d.h)}</span></div>
+   <div class="mrow"><span class="k">电</span><span class="v">${esc(d.e)}</span></div>
+   <div class="mrow"><span class="k">电梯/楼梯</span><span class="v">${esc(d.f)}</span></div>
+   <div class="mrow"><span class="k">备注</span><span class="v plain">${esc(d.tag)}</span></div>
+   <div class="mrow"><span class="k">信息来源</span><span class="v plain">${esc(d.src)}</span></div>
+   <div class="mrow"><span class="k">位置</span><span class="v plain">深圳·龙华·${esc(d.b)}</span></div>${vrow}`;
+  const pv=document.getElementById("playv");
+  if(pv)pv.onclick=e=>{e.preventDefault();openVideoViewer(d.b,d.r)};
+  document.getElementById("modal").classList.add("open");
+}
+/* ===== 房号视频：拍摄/相册上传 → 待入库队列 → 自动进「富哥视频哈」→ 挂到房号；编号从01起；下架自动归档 ===== */
+let VIDEOS={};
+try{VIDEOS=JSON.parse(localStorage.getItem("fuge_videos")||"{}")}catch(e){VIDEOS={}}
+let QUEUE={};
+function saveVideos(){localStorage.setItem("fuge_videos",JSON.stringify(VIDEOS))}
+function vKey(b,r){return b+"|"+r}
+function nextNum(){let mx=0;for(const k in VIDEOS){const n=parseInt(VIDEOS[k].num,10);if(n>mx)mx=n}for(const k in QUEUE){const n=parseInt(QUEUE[k].num,10);if(n>mx)mx=n}return String(mx+1).padStart(2,"0")}
+function shortBld(b){if(b.startsWith("共和花园"))return b.replace("共和花园","");if(b.includes("伍屋村"))return"伍屋村";return"云梦"}
+function toastMsg(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>{t.classList.remove("show");t.textContent="已复制"},1800)}
+function idb(){return new Promise((res,rej)=>{const rq=indexedDB.open("fuge_video",2);rq.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains("st"))d.createObjectStore("st");if(!d.objectStoreNames.contains("queue"))d.createObjectStore("queue")};rq.onsuccess=e=>res(rq.result);rq.onerror=e=>rej(rq.error)})}
+function idbPut(st,k,v){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(st,"readwrite");t.objectStore(st).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}))}
+function idbGet(st,k){return idb().then(db=>new Promise((res,rej)=>{const rq=db.transaction(st,"readonly").objectStore(st).get(k);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error)}))}
+function idbDel(st,k){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(st,"readwrite");t.objectStore(st).delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}))}
+function idbAll(st){return idb().then(db=>new Promise((res,rej)=>{const rq=db.transaction(st,"readonly").objectStore(st).getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error)}))}
+let DIRH=null;
+async function getDir(){
+  if(DIRH) return DIRH;
+  const h=await idbGet("st","dir");
+  if(h){const p=await h.queryPermission({mode:"readwrite"});if(p==="granted"){DIRH=h;return h}const q=await h.requestPermission({mode:"readwrite"});if(q==="granted"){DIRH=h;return h}}
+  if(!window.showDirectoryPicker) return null;
+  const dh=await window.showDirectoryPicker({id:"fugeVideo",mode:"readwrite"});
+  await idbPut("st","dir",dh);DIRH=dh;return dh;
+}
+async function loadQueue(){
+  const all=await idbAll("queue");
+  QUEUE={};
+  all.forEach(rec=>{if(rec&&rec.bld)QUEUE[vKey(rec.bld,rec.room)]={num:rec.num,file:rec.file,bld:rec.bld,room:rec.room}});
+  updateQStatus();
+}
+function qCount(){return Object.keys(QUEUE).length}
+function updateQStatus(){const el=document.getElementById("qst");if(el){const n=qCount();el.innerHTML=n?("⏳ 待入库 "+n+" 支：在电脑上点「🔍 自检一下」自动写入「富哥视频哈」并挂到房号"):"✅ 待入库 0 支：队列是空的，传的都已经进 H 盘、挂到房号上了。"}}
+function openUpload(d,replace){
+  const key=vKey(d.b,d.r);
+  const cur=VIDEOS[key];
+  const price=d.p==="未标注"?"":d.p+"元";
+  document.getElementById("mcard").innerHTML=`
+   <div class="mhead"><h3>${replace?"🔄 替换房间视频":"🎥 现场拍视频"}</h3><button class="mclose" onclick="document.getElementById('modal').classList.remove('open')">✕</button></div>
+   <div style="font-size:13px;color:var(--sub);margin:-6px 0 10px">要传：<b style="color:var(--teal-d)">${esc(d.b)} ${esc(d.r)}</b>（${esc(d.t)}·${price||"价格未标"}）</div>
+   ${replace&&cur?`<div class="mrow"><span class="k">当前视频</span><span class="v plain">编号${cur.num} · ${esc(cur.file)}（${esc(cur.status||"已入库")}）</span></div><div style="font-size:12px;color:var(--sub);margin:4px 0 8px">替换后新视频接续编号上架，旧视频自动留在「富哥视频哈」归档，不删除。</div>`:""}
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <button id="shoot" class="qbtn primary" style="padding:14px 0;font-size:15px">📷 现在拍</button>
+    <button id="pick" class="qbtn gray" style="padding:14px 0;font-size:15px">🖼 从相册选</button>
+   </div>
+   <input type="file" id="fcap" accept="video/*" capture="environment" style="display:none">
+   <input type="file" id="fpick" accept="video/*" style="display:none">
+   <div style="font-size:12px;color:var(--sub);margin-top:10px">选好就开始传，传完自动编号上架。</div>
+   <div style="font-size:12px;color:var(--sub);margin-top:6px">保存位置：电脑→直接写入「富哥视频哈」(H盘)；手机→同步云端，电脑端每日12:30任务自动下载进 H 盘</div>
+   <div style="font-size:12px;color:var(--sub);margin-top:6px">页面版呆？ → 传不上就点下面 🔍 自检一下</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+    <button id="chk" class="qbtn">🔍 自检一下</button>
+    <button id="seeq" class="qbtn">👀 待入库</button>
+   </div>
+   <div id="qst" style="font-size:13px;font-weight:700;color:var(--teal-d);margin-top:10px"></div>
+   <div id="qlist" style="font-size:12px;color:var(--sub);margin-top:6px"></div>
+   <div id="vst" style="font-size:12px;color:var(--sub);margin-top:8px"></div>`;
+  document.getElementById("modal").classList.add("open");
+  updateQStatus();
+  document.getElementById("shoot").onclick=()=>document.getElementById("fcap").click();
+  document.getElementById("pick").onclick=()=>document.getElementById("fpick").click();
+  document.getElementById("fcap").onchange=e=>{const f=e.target.files[0];if(f)handleVideoFile(d,f)};
+  document.getElementById("fpick").onchange=e=>{const f=e.target.files[0];if(f)handleVideoFile(d,f)};
+  document.getElementById("chk").onclick=()=>selfCheck();
+  document.getElementById("seeq").onclick=()=>showQueue();
+}
+/* ===== filebin 云端中转：手机直传云端，电脑端任务自动下载进 H 盘 ===== */
+const FB_BIN="fugevideo";
+async function fbUpload(file,fname){const r=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(fname),{method:"PUT",body:file,headers:{"Content-Type":file.type||"video/mp4"}});if(!r.ok)throw new Error("HTTP "+r.status);return true}
+async function pushRegistry(){const vids=Object.values(VIDEOS).map(v=>({num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}));vids.sort((a,b)=>a.num.localeCompare(b.num));await fbPutRegistry({updated:new Date().toISOString(),videos:vids});localStorage.setItem("fuge_regpush",String(Date.now()))}
+async function fbPutRegistry(reg){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{method:"PUT",body:JSON.stringify(reg),headers:{"Content-Type":"application/json"}});if(!r.ok)throw new Error("registry HTTP "+r.status)}
+async function fbGetRegistry(){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+async function mergeRemoteRegistry(){
+  try{
+    const reg=await fbGetRegistry();
+    (reg.videos||[]).forEach(v=>{const k=vKey(v.bld,v.room);if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}});
+    saveVideos();
+    // 每日自动续期：filebin 的 bin 超过6天没有上传会过期，重新推一次登记表保活，
+    // 这样已归档视频在房号重上架时始终能从「富哥视频哈」/云端调取
+    const last=+(localStorage.getItem("fuge_regpush")||0);
+    if(Date.now()-last>20*3600*1000){try{await pushRegistry()}catch(e){}}
+  }catch(e){}
+}
+async function syncPendingCloud(silent){
+  const keys=Object.keys(QUEUE);let ok=0;
+  for(const k of keys){
+    const rec=await idbGet("queue",k);if(!rec||!rec.blob)continue;
+    try{await fbUpload(rec.blob,rec.file);if(VIDEOS[k]){VIDEOS[k].status="已同步云端"}ok++}catch(e){}
+  }
+  if(ok){saveVideos();try{await pushRegistry()}catch(e){}render()}
+  return ok;
+}
+async function selfCheck(){
+  const st=document.getElementById("vst");
+  if(st)st.textContent="自检中…";
+  await flushQueue(true);
+  const ok=await syncPendingCloud(true);
+  try{await pushRegistry()}catch(e){}
+  const n=qCount();
+  const msg="✅ 自检完成："+(ok?("云端新同步 "+ok+" 支；"):"")+(n?("待入库 "+n+" 支，电脑端每日12:30任务自动下载进 H 盘"):"H 盘与云端均已就绪");
+  if(st)st.textContent=msg;else toastMsg(msg);
+  updateQStatus();
+}
+async function handleVideoFile(d,file){
+  const st=document.getElementById("vst");
+  const num=nextNum();
+  const ext=file.name.includes(".")?file.name.slice(file.name.lastIndexOf(".")):".mp4";
+  const fname=num+"_"+d.r+"_"+shortBld(d.b)+ext;
+  const key=vKey(d.b,d.r);
+  const old=VIDEOS[key];
+  if(old&&old.status==="待入库"){await idbDel("queue",key);delete QUEUE[key];}
+  VIDEOS[key]={num:num,file:fname,bld:d.b,room:d.r,status:"待入库"};
+  saveVideos();updateQStatus();render();
+  toastMsg("已编号 "+num+"："+fname);
+  st.textContent="正在入库…";
+  let wroteFolder=false,cloudOk=false;
+  try{const dir=await getDir();if(dir){const fh=await dir.getFileHandle(fname,{create:true});const w=await fh.createWritable();await w.write(file);await w.close();wroteFolder=true}}catch(e){}
+  try{await fbUpload(file,fname);cloudOk=true;try{await pushRegistry()}catch(e){}}catch(e){}
+  if(wroteFolder){VIDEOS[key].status="已入库";st.textContent="✅ 已进 H 盘"+(cloudOk?"并同步云端":"")+"："+fname+"（编号 "+num+"，右上角已标记）"}
+  else if(cloudOk){VIDEOS[key].status="已同步云端";st.textContent="✅ 已同步云端："+fname+"（编号 "+num+"；电脑端每日12:30任务自动下载进 H 盘）"}
+  else{st.textContent="编号 "+num+" 暂未同步成功，稍后点「🔍 自检一下」重试"}
+  saveVideos();
+  try{await idbPut("queue",key,{num:num,file:fname,bld:d.b,room:d.r,ts:Date.now(),blob:file});QUEUE[key]={num:num,file:fname,bld:d.b,room:d.r};}catch(e){}
+  updateQStatus();render();
+}
+async function flushQueue(silent){
+  const keys=Object.keys(QUEUE);
+  if(!keys.length){if(!silent){toastMsg("队列是空的：传的都已经进 H 盘、挂到房号上了")}updateQStatus();return}
+  let dir=null;let permErr="";
+  try{dir=await getDir()}catch(e){permErr=(e&&e.message)||""}
+  if(!dir){
+    if(!silent){toastMsg("暂时写不进 H 盘："+(permErr||"请在电脑版浏览器点自检并授权文件夹"))}
+    updateQStatus();return;
+  }
+  let ok=0;
+  for(const k of keys){
+    const rec=await idbGet("queue",k);
+    if(!rec){delete QUEUE[k];continue}
+    try{
+      const fh=await dir.getFileHandle(rec.file,{create:true});
+      const w=await fh.createWritable();await w.write(rec.blob);await w.close();
+      if(VIDEOS[k])VIDEOS[k].status="已入库";
+      await idbDel("queue",k);delete QUEUE[k];ok++;
+    }catch(e){}
+  }
+  saveVideos();updateQStatus();render();
+  if(!silent)toastMsg(ok?("已入库 "+ok+" 支到「富哥视频哈」"):"本次没有入库成功，稍后再试");
+}
+function showQueue(){
+  const keys=Object.keys(QUEUE);
+  const el=document.getElementById("qlist");
+  if(el)el.innerHTML=keys.length
+    ?("待入库："+keys.map(k=>`编号${QUEUE[k].num}·${esc(QUEUE[k].file)}`).join("；"))
+    :"队列是空的：传的都已经进 H 盘、挂到房号上了。";
+}
+async function archiveOfflist(){
+  const inData=new Set();
+  DATA.forEach(b=>b.rooms.forEach(r=>inData.add(vKey(b.b,r.r))));
+  let changed=false;
+  for(const k in VIDEOS){
+    const inList=inData.has(k);
+    if(inList&&VIDEOS[k].status==="已下架归档"){
+      // 房号重新上架：自动从「富哥视频哈」挂回原编号视频，编号不变，无需重拍
+      VIDEOS[k].status="已入库";changed=true;
+    }
+    if(!inList&&VIDEOS[k].status!=="已下架归档"){
+      // 房号下架：视频编号不变，自动归档保留在「富哥视频哈」，重上架时自动调取
+      VIDEOS[k].status="已下架归档";changed=true;
+    }
+  }
+  if(changed){saveVideos();try{await pushRegistry()}catch(e){}}
+  if(qCount()>0){try{await flushQueue(true)}catch(e){}}
+}
+async function resolveVideoUrl(b,r,cur){
+  const key=vKey(b,r);
+  if(QUEUE[key]){const rec=await idbGet("queue",key);if(rec&&rec.blob)return URL.createObjectURL(rec.blob)}
+  try{const dir=await getDir();if(dir){const fh=await dir.getFileHandle(cur.file);const f=await fh.getFile();return URL.createObjectURL(f)}}catch(e){}
+  try{
+    const rr=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(cur.file),{cache:"no-store"});
+    if(rr.ok&&rr.redirected&&rr.url)return rr.url;
+  }catch(e){}
+  return null;
+}
+async function openVideoViewer(b,r){
+  const key=vKey(b,r);const cur=VIDEOS[key];if(!cur)return;
+  const ov=document.createElement("div");ov.id="vplayer";
+  ov.innerHTML=`
+   <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;flex-shrink:0">
+    <button id="vclose" style="border:none;background:rgba(255,255,255,.16);color:#fff;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
+    <div style="color:#fff;font-size:15px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r)} · ${esc(b)}</div>
+    <span style="background:rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:700;padding:4px 12px;border-radius:8px;white-space:nowrap">编号 ${cur.num}</span>
+   </div>
+   <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0">
+    <video id="vv" playsinline webkit-playsinline x5-video-player-type="h5" x5-playsinline x5-video-orientation="portraint" controls preload="metadata" style="max-width:100%;max-height:100%;width:100%;object-fit:contain;background:#000"></video>
+   </div>
+   <div style="padding:8px 14px 14px;color:#8fa3a0;font-size:12px;flex-shrink:0">文件：${esc(cur.file)}｜状态：${esc(cur.status||"已入库")}</div>`;
+  document.body.appendChild(ov);
+  document.body.style.overflow="hidden";
+  const close=()=>{const v=ov.querySelector("video");if(v){try{v.pause()}catch(e){}}if(v&&v.src.startsWith("blob:"))URL.revokeObjectURL(v.src);ov.remove();document.body.style.overflow="";};
+  ov.querySelector("#vclose").onclick=close;
+  const vv=ov.querySelector("#vv");
+  (async()=>{
+    const url=await resolveVideoUrl(b,r,cur);
+    if(!ov.isConnected)return;
+    if(url){
+      vv.src=url;
+      try{await vv.play()}catch(e){/* 浏览器拦截自动播放时，用户点一次播放键即可，不会跳转 */}
+    }else{
+      vv.outerHTML='<div style="color:#cbd5d1;font-size:13px;text-align:center;padding:24px">视频读取失败：文件可能已过期，请点房号右下角 ↻ 重新上传</div>';
+    }
+  })();
+}
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("open")});
+const chipBox=document.getElementById("catChips");
+CATEGORIES.forEach(c=>{
+  const s=document.createElement("span");
+  s.className="chip"+(c==="全部户型"?" on":"");s.textContent=c;
+  s.onclick=()=>{state.cat=c;chipBox.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));s.classList.add("on");render();};
+  chipBox.appendChild(s);
+});
+function syncFloorUI(){
+  document.getElementById("floorSel").value=state.floor;
+  document.querySelectorAll("#floorBtns button").forEach(x=>x.classList.toggle("on",x.dataset.v===state.floor));
+}
+document.getElementById("floorBtns").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  state.floor=b.dataset.v;syncFloorUI();render();
+});
+document.getElementById("floorSel").addEventListener("change",e=>{state.floor=e.target.value;syncFloorUI();render()});
+document.getElementById("park").addEventListener("change",e=>{state.park=e.target.value;render()});
+document.getElementById("budget").addEventListener("change",e=>{state.budget=e.target.value;render()});
+document.getElementById("sort").addEventListener("change",e=>{state.sort=e.target.value;render()});
+const qEl=document.getElementById("q");
+qEl.addEventListener("input",()=>{state.q=qEl.value;document.getElementById("clr").style.display=qEl.value?"block":"none";render()});
+document.getElementById("clr").onclick=()=>{qEl.value="";state.q="";document.getElementById("clr").style.display="none";render();qEl.focus()};
+document.getElementById("share").onclick=()=>{
+  const t=document.getElementById("toast");
+  const show=(msg,ms)=>{t.textContent=msg;t.classList.add("show");setTimeout(()=>{t.classList.remove("show");t.textContent="已复制"},ms||1500)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(location.href).then(()=>show("本页链接已复制，发给客户即可"),()=>show("复制失败，请手动复制地址栏链接",1800))}
+  else show("复制失败，请手动复制地址栏链接",1800);
+};
+function copyBld(name){
+  const b=DATA.find(x=>x.b===name);if(!b)return;
+  const lines=[name].concat(b.rooms.map(r=>`${r.t} ${r.r} ${typeof r.p==="number"?r.p+"元/月":"价格未标"}${r.tag?"（"+r.tag+"）":""}`));
+  const text=lines.join("\n");
+  const done=()=>{const t=document.getElementById("toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1500)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fallback(text,done))}
+  else fallback(text,done);
+}
+function fallback(text,done){
+  const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");done()}catch(e){}document.body.removeChild(ta);
+}
+syncFloorUI();
+render();
+loadQueue().then(()=>{render();archiveOfflist()});
+</script>
+</body>
+</html>
