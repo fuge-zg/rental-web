@@ -33,6 +33,8 @@ def park_of(name):
         return "共和花园"
     if "伍屋村" in name:
         return "伍屋村"
+    if "梅龙苑" in name:
+        return "梅龙苑"
     return "其他"
 
 def bld_num(name):
@@ -50,7 +52,7 @@ def anon_code(i):
 
 anon_map = {}
 print("== 楼栋匿名映射 ==")
-for park in ["共和花园", "伍屋村", "其他"]:
+for park in ["共和花园", "伍屋村", "梅龙苑", "其他"]:
     if park not in groups:
         continue
     for i, b in enumerate(sorted(groups[park], key=lambda x: bld_num(x["b"]))):
@@ -186,7 +188,7 @@ footer p{margin:3px 0}
    <button class="btn-book" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">📞 联系看房</button>
    <div class="bigbadge"><b id="statRooms2">0</b><span>套房在租</span></div>
   </div>
-   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · <b id="statBld">0</b> 个分组 · 更新 <b>__DATE__</b>　📍 深圳·龙华 · 共和花园 / 伍屋村</div>
+   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · <b id="statBld">0</b> 个分组 · 更新 <b>__DATE__</b>　📍 深圳·龙华 · 共和花园 / 伍屋村 / 梅龙苑</div>
   <div class="search">
    <span class="mag">🔍</span>
    <input id="q" type="search" placeholder='搜索房号 / 价格区间，如「01」「1000-1600」' autocomplete="off">
@@ -208,6 +210,7 @@ footer p{margin:3px 0}
     <option value="all">全部</option>
     <option value="共和花园">共和花园</option>
     <option value="伍屋村">伍屋村</option>
+    <option value="梅龙苑">梅龙苑</option>
     <option value="其他">其他盘口</option>
    </select>
    <span class="lbl">预算</span>
