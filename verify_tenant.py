@@ -13,7 +13,7 @@ missing = [i for i in ids_needed if ('id="%s"' % i) not in c]
 print("JS 引用元素检查:", ("缺失 " + str(missing)) if missing else "全部齐备 OK")
 
 # DATA JSON 合法性
-m = re.search(r'const DATA = (\[.*?\]);\s*\nconst state', c, re.S)
+m = re.search(r'const DATA = (\[.*?\]);\s*\n/\*', c, re.S) or re.search(r'const DATA = (\[.*?\]);', c, re.S)
 try:
     import json
     data = json.loads(m.group(1))
