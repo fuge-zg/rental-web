@@ -352,6 +352,7 @@ function openUpload(d,replace){
    <div id="vst" style="font-size:12px;color:var(--sub);margin-top:8px"></div>`;
   document.getElementById("modal").classList.add("open");
   updateQStatus();
+  (async()=>{try{await mergeRemoteRegistry();updateQStatus();const el=document.getElementById("vst");if(el&&!el.textContent)el.textContent="下一编号："+nextNum()+"（已合并云端记录，手机电脑共用一套编号）"}catch(e){}})();
   document.getElementById("shoot").onclick=()=>document.getElementById("fcap").click();
   document.getElementById("pick").onclick=()=>document.getElementById("fpick").click();
   document.getElementById("fcap").onchange=e=>{const f=e.target.files[0];if(f)handleVideoFile(d,f)};
@@ -362,19 +363,36 @@ function openUpload(d,replace){
 /* ===== filebin 云端中转：手机直传云端，电脑端任务自动下载进 H 盘 ===== */
 const FB_BIN="fugevideo";
 async function fbUpload(file,fname){const r=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(fname),{method:"PUT",body:file,headers:{"Content-Type":file.type||"video/mp4"}});if(!r.ok)throw new Error("HTTP "+r.status);return true}
-async function pushRegistry(){const vids=Object.values(VIDEOS).map(v=>({num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}));vids.sort((a,b)=>a.num.localeCompare(b.num));await fbPutRegistry({updated:new Date().toISOString(),videos:vids});localStorage.setItem("fuge_regpush",String(Date.now()))}
+async function pushRegistry(){
+  let remote=[];
+  try{const reg=await fbGetRegistry();remote=reg.videos||[]}catch(e){}
+  const local=Object.values(VIDEOS).map(v=>({num:v.num,file:v.file,bld:v.bld||"",room:v.room||"",status:v.status||"已入库"}));
+  const byFile={};const merged=[];
+  [...remote,...local].forEach(v=>{
+    if(!v||!v.file)return;
+    if(byFile[v.file]){const m=byFile[v.file];if(v.status&&v.status!=="已入库")m.status=v.status;if(v.bld&&!m.bld)m.bld=v.bld;if(v.room&&!m.room)m.room=v.room;if(v.num&&!m.num)m.num=v.num;return}
+    byFile[v.file]=v;merged.push(v);
+  });
+  merged.sort((a,b)=>String(a.num).localeCompare(String(b.num)));
+  await fbPutRegistry({updated:new Date().toISOString(),videos:merged});
+  merged.forEach(v=>{const k=(v.bld&&v.room)?vKey(v.bld,v.room):("file:"+v.file);if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld||"",room:v.room||"",status:v.status||"已入库",ghost:!v.bld}});
+  saveVideos();
+  localStorage.setItem("fuge_regpush",String(Date.now()));
+}
 async function fbPutRegistry(reg){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{method:"PUT",body:JSON.stringify(reg),headers:{"Content-Type":"application/json"}});if(!r.ok)throw new Error("registry HTTP "+r.status)}
 async function fbGetRegistry(){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
 async function mergeRemoteRegistry(){
-  try{
-    const reg=await fbGetRegistry();
-    (reg.videos||[]).forEach(v=>{const k=vKey(v.bld,v.room);if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld,room:v.room,status:v.status||"已入库"}});
-    saveVideos();
-    // 每日自动续期：filebin 的 bin 超过6天没有上传会过期，重新推一次登记表保活，
-    // 这样已归档视频在房号重上架时始终能从「富哥视频哈」/云端调取
-    const last=+(localStorage.getItem("fuge_regpush")||0);
-    if(Date.now()-last>20*3600*1000){try{await pushRegistry()}catch(e){}}
-  }catch(e){}
+  const reg=await fbGetRegistry();
+  (reg.videos||[]).forEach(v=>{
+    if(!v||!v.file)return;
+    const k=(v.bld&&v.room)?vKey(v.bld,v.room):("file:"+v.file);
+    if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld||"",room:v.room||"",status:v.status||"已入库",ghost:!v.bld};
+  });
+  saveVideos();
+  // 每日自动续期：filebin 的 bin 超过6天没有上传会过期，重新推一次登记表保活，
+  // 这样已归档视频在房号重上架时始终能从「富哥视频哈」/云端调取
+  const last=+(localStorage.getItem("fuge_regpush")||0);
+  if(Date.now()-last>20*3600*1000){try{await pushRegistry()}catch(e){}}
 }
 async function syncPendingCloud(silent){
   const keys=Object.keys(QUEUE);let ok=0;
@@ -398,6 +416,8 @@ async function selfCheck(){
 }
 async function handleVideoFile(d,file){
   const st=document.getElementById("vst");
+  st.textContent="正在同步编号…";
+  try{await mergeRemoteRegistry()}catch(e){}
   const num=nextNum();
   const ext=file.name.includes(".")?file.name.slice(file.name.lastIndexOf(".")):".mp4";
   const fname=num+"_"+d.r+"_"+shortBld(d.b)+ext;
@@ -548,7 +568,7 @@ function fallback(text,done){
 }
 syncFloorUI();
 render();
-loadQueue().then(()=>{render();archiveOfflist()});
+loadQueue().then(async()=>{try{await mergeRemoteRegistry()}catch(e){}render();archiveOfflist()});
 </script>
 </body>
 </html>
