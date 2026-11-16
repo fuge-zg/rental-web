@@ -100,7 +100,7 @@ footer p{margin:3px 0}
    <button class="btn-book" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">📅 预约看房</button>
    <div class="bigbadge"><b id="statRooms2">0</b><span>套房在租</span></div>
   </div>
-   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · <b id="statBld">0</b> 个楼栋 · 更新 <b>2026-11-16</b>　📍 深圳·龙华 · 共和花园 / 伍屋村 / 梅龙苑</div>
+   <div class="stats">共 <b id="statRooms">0</b> 套在租房源 · <b id="statBld">0</b> 个楼栋 · 更新 <b>2026-11-16</b>　📍 深圳·龙华 · 共和花园 / 伍屋村 / 梅龙苑 · <b>页面v3</b></div>
   <div class="search">
    <span class="mag">🔍</span>
    <input id="q" type="search" placeholder='搜索栋号 / 房号 / 价格区间，如「17栋」「01」「1000-1600」' autocomplete="off">
@@ -257,7 +257,7 @@ function render(){
         const tag = /特价|已含|包/.test((r.tag||"")+(r.m||""))?'<span class="tagdot">惠</span>':"";
         const rk=roomKey(r);
         const hic=rk!==null&&rk>=1000?" hi":"";
-        const hasV=!!VIDEOS[vKey(b.b,r.r)];
+        const hasV=roomHasVideo(b.b,r.r);
         const vtag=hasV?'<span class="vplay" title="播放房间视频">▶</span><span class="vrep" title="替换视频">↻</span>':"";
         body+=`<div class="room${hic}" data-b="${esc(b.b)}" data-r="${esc(r.r)}" data-t="${esc(r.t)}" data-p="${r.p??"未标注"}" data-m="${esc(r.m||"未标注")}" data-c="${esc(r.c||"未标注")}" data-h="${esc(r.h||"未标注")}" data-e="${esc(r.e||"未标注")}" data-f="${esc(r.f||"未标注")}" data-tag="${esc(r.tag||"—")}" data-src="${esc(b.src||"—")} ${esc(b.time||"")}">${tag}<span class="plus" title="上传视频（拍摄/相册）">+</span>${vtag}<div class="rn">${esc(r.r)}</div><div class="rp${na}">${p}</div><div class="mgf">${esc(mg)}</div></div>`;
       }
@@ -276,7 +276,7 @@ function render(){
 }
 function openModal(d){
   const price = d.p==="未标注"?'<span class="v plain">价格未标注（信息缺失）</span>':`<span class="v price">${esc(d.p)} 元/月</span>`;
-  const cur=VIDEOS[vKey(d.b,d.r)];
+  const cur=videoFor(d.b,d.r);
   const vrow=cur?`<div class="mrow"><span class="k">房间视频</span><span class="v"><a href="#" id="playv" style="color:var(--teal);text-decoration:none">▶ 播放 ${esc(cur.file)}（编号${cur.num}）</a></span></div>`:"";
   document.getElementById("mcard").innerHTML=`
    <div class="mhead"><h3>${esc(d.b)}</h3><button class="mclose" onclick="document.getElementById('modal').classList.remove('open')">✕</button></div>
@@ -295,40 +295,78 @@ function openModal(d){
   if(pv)pv.onclick=e=>{e.preventDefault();openVideoViewer(d.b,d.r)};
   document.getElementById("modal").classList.add("open");
 }
-/* ===== 房号视频：拍摄/相册上传 → 待入库队列 → 自动进「富哥视频哈」→ 挂到房号；编号从01起；下架自动归档 ===== */
+/* ===== 房号视频 v3：拍摄/相册上传 → filebin云端（文件名即登记）→ 全设备自动同步/归档/播放 ===== */
 let VIDEOS={};
 try{VIDEOS=JSON.parse(localStorage.getItem("fuge_videos")||"{}")}catch(e){VIDEOS={}}
 let QUEUE={};
+const SYNCED={};let SYNCING=false;
 function saveVideos(){localStorage.setItem("fuge_videos",JSON.stringify(VIDEOS))}
 function vKey(b,r){return b+"|"+r}
-function nextNum(){let mx=0;for(const k in VIDEOS){const n=parseInt(VIDEOS[k].num,10);if(n>mx)mx=n}for(const k in QUEUE){const n=parseInt(QUEUE[k].num,10);if(n>mx)mx=n}return String(mx+1).padStart(2,"0")}
-function shortBld(b){if(b.startsWith("共和花园"))return b.replace("共和花园","");if(b.includes("伍屋村"))return"伍屋村";return"云梦"}
+function nextNum(){let mx=0;for(const k in VIDEOS){const n=parseInt(VIDEOS[k].num,10);if(!isNaN(n)&&n>mx)mx=n}for(const k in QUEUE){const n=parseInt(QUEUE[k].num,10);if(!isNaN(n)&&n>mx)mx=n}return String(mx+1).padStart(2,"0")}
+function shortBld(b){if(b.startsWith("共和花园"))return b.replace("共和花园","");if(b.includes("伍屋村"))return"伍屋村";if(b.includes("梅龙苑"))return"梅龙苑";return"云梦"}
 function toastMsg(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>{t.classList.remove("show");t.textContent="已复制"},1800)}
-function idb(){return new Promise((res,rej)=>{const rq=indexedDB.open("fuge_video",2);rq.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains("st"))d.createObjectStore("st");if(!d.objectStoreNames.contains("queue"))d.createObjectStore("queue")};rq.onsuccess=e=>res(rq.result);rq.onerror=e=>rej(rq.error)})}
+function videoFor(b,r){let best=null;for(const k in VIDEOS){const v=VIDEOS[k];if(v.bld===b&&v.room===r&&v.status!=="已下架归档"){if(!best||String(v.num)>String(best.num))best=v}}return best}
+function roomHasVideo(b,r){return !!videoFor(b,r)}
+function idb(){return new Promise((res,rej)=>{const rq=indexedDB.open("fuge_video",3);rq.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains("st"))d.createObjectStore("st");if(!d.objectStoreNames.contains("queue"))d.createObjectStore("queue")};rq.onsuccess=e=>res(rq.result);rq.onerror=e=>rej(rq.error)})}
 function idbPut(st,k,v){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(st,"readwrite");t.objectStore(st).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}))}
 function idbGet(st,k){return idb().then(db=>new Promise((res,rej)=>{const rq=db.transaction(st,"readonly").objectStore(st).get(k);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error)}))}
 function idbDel(st,k){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(st,"readwrite");t.objectStore(st).delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}))}
 function idbAll(st){return idb().then(db=>new Promise((res,rej)=>{const rq=db.transaction(st,"readonly").objectStore(st).getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error)}))}
 let DIRH=null;
 async function getDir(){
-  if(DIRH) return DIRH;
+  if(DIRH)return DIRH;
   const h=await idbGet("st","dir");
   if(h){const p=await h.queryPermission({mode:"readwrite"});if(p==="granted"){DIRH=h;return h}const q=await h.requestPermission({mode:"readwrite"});if(q==="granted"){DIRH=h;return h}}
-  if(!window.showDirectoryPicker) return null;
+  if(!window.showDirectoryPicker)return null;
   const dh=await window.showDirectoryPicker({id:"fugeVideo",mode:"readwrite"});
   await idbPut("st","dir",dh);DIRH=dh;return dh;
 }
-async function loadQueue(){
-  const all=await idbAll("queue");
-  QUEUE={};
-  all.forEach(rec=>{if(rec&&rec.bld)QUEUE[vKey(rec.bld,rec.room)]={num:rec.num,file:rec.file,bld:rec.bld,room:rec.room}});
-  updateQStatus();
+async function loadQueue(){const all=await idbAll("queue");QUEUE={};all.forEach(rec=>{if(rec&&rec.file)QUEUE[rec.file]=rec});updateQStatus()}
+function qCount(){let n=0;for(const k in QUEUE){if(!QUEUE[k].cloudSynced)n++}return n}
+function updateQStatus(){const el=document.getElementById("qst");if(el){const n=qCount();el.innerHTML=n?("⏳ 待上传云端 "+n+" 支：点「🔍 自检一下」立即上传"):"✅ 待上传 0 支：全部已同步云端。"}}
+function parseBinName(fn){
+  const base=fn.replace(/\.[^.]+$/,"");
+  const parts=base.split("_");
+  if(parts.length<2||!/^\d{1,3}$/.test(parts[0]))return null;
+  let bld="";
+  const tail=parts.slice(2).join("_");
+  if(tail.includes("伍屋村"))bld="伍屋村·铂悦公馆（电梯）";
+  else if(tail.includes("111栋"))bld="共和花园111栋（雅居公寓）";
+  else if(tail.includes("17栋"))bld="共和花园17栋全新公寓（楼梯）";
+  else if(tail.includes("90栋"))bld="共和花园90栋";
+  else if(tail.includes("110栋"))bld="共和花园110栋";
+  else if(tail.includes("114栋"))bld="共和花园114栋";
+  else if(tail.includes("55栋"))bld="共和花园55栋";
+  return {num:parts[0],room:parts[1]||"",bld:bld,file:fn};
 }
-function qCount(){return Object.keys(QUEUE).length}
-function updateQStatus(){const el=document.getElementById("qst");if(el){const n=qCount();el.innerHTML=n?("⏳ 待入库 "+n+" 支：在电脑上点「🔍 自检一下」自动写入「富哥视频哈」并挂到房号"):"✅ 待入库 0 支：队列是空的，传的都已经进 H 盘、挂到房号上了。"}}
+async function fetchBinFiles(){
+  const rq=await fetch("https://filebin.net/"+FB_BIN,{headers:{"Accept":"application/json"},cache:"no-store"});
+  if(!rq.ok)throw new Error("bin HTTP "+rq.status);
+  const info=await rq.json();
+  return (info.files||[]).map(f=>f.filename).filter(f=>f&&f.toLowerCase()!=="registry.json"&&!/^sync_/.test(f));
+}
+async function syncFromBin(){
+  const files=await fetchBinFiles();
+  let changed=false;
+  files.forEach(fn=>{
+    const p=parseBinName(fn);if(!p)return;
+    const k="file:"+fn;
+    if(!VIDEOS[k]){VIDEOS[k]={num:p.num,file:fn,bld:p.bld,room:p.room,status:"已同步云端",ghost:!(p.bld&&p.room)};changed=true}
+    else if(VIDEOS[k].status==="待上传"){VIDEOS[k].status="已同步云端";changed=true}
+  });
+  if(changed)saveVideos();
+  return files;
+}
+async function fbUpload(file,fname){const r=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(fname),{method:"PUT",body:file,headers:{"Content-Type":file.type||"video/mp4"}});if(!r.ok)throw new Error("HTTP "+r.status);return true}
+async function keepalive(){
+  const last=+(localStorage.getItem("fuge_kap")||0);
+  if(Date.now()-last<20*3600*1000)return;
+  const day=new Date().toISOString().slice(0,10).replace(/-/g,"");
+  await fbUpload(new Blob(["sync"],{type:"application/octet-stream"}),"sync_"+day+".dat");
+  localStorage.setItem("fuge_kap",String(Date.now()));
+}
 function openUpload(d,replace){
-  const key=vKey(d.b,d.r);
-  const cur=VIDEOS[key];
+  const cur=videoFor(d.b,d.r);
   const price=d.p==="未标注"?"":d.p+"元";
   document.getElementById("mcard").innerHTML=`
    <div class="mhead"><h3>${replace?"🔄 替换房间视频":"🎥 现场拍视频"}</h3><button class="mclose" onclick="document.getElementById('modal').classList.remove('open')">✕</button></div>
@@ -341,18 +379,18 @@ function openUpload(d,replace){
    <input type="file" id="fcap" accept="video/*" capture="environment" style="display:none">
    <input type="file" id="fpick" accept="video/*" style="display:none">
    <div style="font-size:12px;color:var(--sub);margin-top:10px">选好就开始传，传完自动编号上架。</div>
-   <div style="font-size:12px;color:var(--sub);margin-top:6px">保存位置：电脑→直接写入「富哥视频哈」(H盘)；手机→同步云端，电脑端打开网页即自动归档 H 盘</div>
+   <div style="font-size:12px;color:var(--sub);margin-top:6px">保存位置：电脑→直接写入「富哥视频哈」(H盘)；手机→上传即同步云端，电脑端网页约1分钟内自动出现并归档</div>
    <div style="font-size:12px;color:var(--sub);margin-top:6px">页面版呆？ → 传不上就点下面 🔍 自检一下</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
     <button id="chk" class="qbtn">🔍 自检一下</button>
-    <button id="seeq" class="qbtn">👀 待入库</button>
+    <button id="seeq" class="qbtn">👀 待上传</button>
    </div>
    <div id="qst" style="font-size:13px;font-weight:700;color:var(--teal-d);margin-top:10px"></div>
    <div id="qlist" style="font-size:12px;color:var(--sub);margin-top:6px"></div>
    <div id="vst" style="font-size:12px;color:var(--sub);margin-top:8px"></div>`;
   document.getElementById("modal").classList.add("open");
   updateQStatus();
-  (async()=>{try{await mergeRemoteRegistry();updateQStatus();const el=document.getElementById("vst");if(el&&!el.textContent)el.textContent="下一编号："+nextNum()+"（已合并云端记录，手机电脑共用一套编号）"}catch(e){}})();
+  (async()=>{try{await syncFromBin();updateQStatus();const el=document.getElementById("vst");if(el&&!el.textContent)el.textContent="下一编号："+nextNum()+"（手机电脑共用一套编号）"}catch(e){}})();
   document.getElementById("shoot").onclick=()=>document.getElementById("fcap").click();
   document.getElementById("pick").onclick=()=>document.getElementById("fpick").click();
   document.getElementById("fcap").onchange=e=>{const f=e.target.files[0];if(f)handleVideoFile(d,f)};
@@ -360,190 +398,81 @@ function openUpload(d,replace){
   document.getElementById("chk").onclick=()=>selfCheck();
   document.getElementById("seeq").onclick=()=>showQueue();
 }
-/* ===== filebin 云端中转：手机直传云端，电脑端任务自动下载进 H 盘 ===== */
-const FB_BIN="fugevideo";
-async function fbUpload(file,fname){const r=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(fname),{method:"PUT",body:file,headers:{"Content-Type":file.type||"video/mp4"}});if(!r.ok)throw new Error("HTTP "+r.status);return true}
-async function pushRegistry(){
-  let remote=[];
-  try{const reg=await fbGetRegistry();remote=reg.videos||[]}catch(e){}
-  const local=Object.values(VIDEOS).map(v=>({num:v.num,file:v.file,bld:v.bld||"",room:v.room||"",status:v.status||"已入库"}));
-  const byFile={};const merged=[];
-  [...remote,...local].forEach(v=>{
-    if(!v||!v.file)return;
-    if(byFile[v.file]){const m=byFile[v.file];if(v.status&&v.status!=="已入库")m.status=v.status;if(v.bld&&!m.bld)m.bld=v.bld;if(v.room&&!m.room)m.room=v.room;if(v.num&&!m.num)m.num=v.num;return}
-    byFile[v.file]=v;merged.push(v);
-  });
-  merged.sort((a,b)=>String(a.num).localeCompare(String(b.num)));
-  await fbPutRegistry({updated:new Date().toISOString(),videos:merged});
-  merged.forEach(v=>{const k=(v.bld&&v.room)?vKey(v.bld,v.room):("file:"+v.file);if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld||"",room:v.room||"",status:v.status||"已入库",ghost:!v.bld}});
-  saveVideos();
-  localStorage.setItem("fuge_regpush",String(Date.now()));
-}
-async function fbPutRegistry(reg){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{method:"PUT",body:JSON.stringify(reg),headers:{"Content-Type":"application/json"}});if(!r.ok)throw new Error("registry HTTP "+r.status)}
-async function fbGetRegistry(){const r=await fetch("https://filebin.net/"+FB_BIN+"/registry.json",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
-async function mergeRemoteRegistry(){
-  const reg=await fbGetRegistry();
-  (reg.videos||[]).forEach(v=>{
-    if(!v||!v.file)return;
-    const k=(v.bld&&v.room)?vKey(v.bld,v.room):("file:"+v.file);
-    if(!VIDEOS[k])VIDEOS[k]={num:v.num,file:v.file,bld:v.bld||"",room:v.room||"",status:v.status||"已入库",ghost:!v.bld};
-  });
-  saveVideos();
-  // 每日自动续期：filebin 的 bin 超过6天没有上传会过期，重新推一次登记表保活，
-  // 这样已归档视频在房号重上架时始终能从「富哥视频哈」/云端调取
-  const last=+(localStorage.getItem("fuge_regpush")||0);
-  if(Date.now()-last>20*3600*1000){try{await pushRegistry()}catch(e){}}
-}
-async function syncPendingCloud(silent){
-  const keys=Object.keys(QUEUE);let ok=0;
-  for(const k of keys){
-    const rec=await idbGet("queue",k);if(!rec||!rec.blob)continue;
-    try{await fbUpload(rec.blob,rec.file);if(VIDEOS[k]){VIDEOS[k].status="已同步云端"}ok++}catch(e){}
-  }
-  if(ok){saveVideos();try{await pushRegistry()}catch(e){}render()}
-  return ok;
-}
-/* ===== 上传即同步：轮询云端登记表，新视频自动归档 H 盘并上墙 ===== */
-const SYNCED={};let SYNCING=false;
-async function syncNewFromCloud(silent){
-  let dir=null;
-  try{dir=await getDir()}catch(e){dir=null}
-  let canWrite=false;
-  if(dir){try{canWrite=(await dir.queryPermission({mode:"readwrite"}))==="granted"}catch(e){canWrite=false}}
-  let fresh=0;
-  for(const k in VIDEOS){
-    const v=VIDEOS[k];
-    if(!v||!v.file||SYNCED[v.file])continue;
-    if(canWrite){
-      let exists=false;
-      try{await dir.getFileHandle(v.file);exists=true}catch(e){exists=false}
-      if(exists){if(v.status!=="已入库")v.status="已入库";SYNCED[v.file]=1;continue}
-      try{
-        const rr=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(v.file),{cache:"no-store"});
-        if(!rr.ok||!rr.redirected){SYNCED[v.file]=1;continue}
-        const blob=await rr.blob();
-        if(blob.size<10000){SYNCED[v.file]=1;continue}
-        const fh=await dir.getFileHandle(v.file,{create:true});
-        const w=await fh.createWritable();await w.write(blob);await w.close();
-        v.status="已入库";SYNCED[v.file]=1;fresh++;
-      }catch(e){}
-    }else{
-      SYNCED[v.file]=1;
-    }
-  }
-  if(fresh>0){
-    saveVideos();try{await pushRegistry()}catch(e){}
-    updateQStatus();render();
-    if(!silent)toastMsg("已自动同步 "+fresh+" 支视频进「富哥视频哈」");
-  }
-}
-let videoSyncBusy=false;
-async function videoSyncTick(silent){
-  if(videoSyncBusy)return;videoSyncBusy=true;
-  try{
-    const before=JSON.stringify(Object.values(VIDEOS).map(v=>[v.file,v.status]));
-    await mergeRemoteRegistry();
-    await syncNewFromCloud(true);
-    const after=JSON.stringify(Object.values(VIDEOS).map(v=>[v.file,v.status]));
-    if(after!==before){render();if(!silent)toastMsg("视频库已自动同步")}
-  }catch(e){}finally{videoSyncBusy=false}
-}
-function startVideoSync(){videoSyncTick(true);setInterval(()=>videoSyncTick(false),60000)}
-async function selfCheck(){
-  const st=document.getElementById("vst");
-  if(st)st.textContent="自检中…";
-  await flushQueue(true);
-  const ok=await syncPendingCloud(true);
-  try{await pushRegistry()}catch(e){}
-  const n=qCount();
-  const msg="✅ 自检完成："+(ok?("云端新同步 "+ok+" 支；"):"")+(n?("待入库 "+n+" 支，电脑端打开网页即自动归档 H 盘"):"H 盘与云端均已就绪");
-  if(st)st.textContent=msg;else toastMsg(msg);
-  updateQStatus();
-}
 async function handleVideoFile(d,file){
   const st=document.getElementById("vst");
-  st.textContent="正在同步编号…";
-  try{await mergeRemoteRegistry()}catch(e){}
+  st.textContent="正在对齐云端编号…";
+  try{await syncFromBin()}catch(e){st.textContent="云端对齐失败，使用本地编号继续"}
   const num=nextNum();
   const ext=file.name.includes(".")?file.name.slice(file.name.lastIndexOf(".")):".mp4";
   const fname=num+"_"+d.r+"_"+shortBld(d.b)+ext;
-  const key=vKey(d.b,d.r);
-  const old=VIDEOS[key];
-  if(old&&old.status==="待入库"){await idbDel("queue",key);delete QUEUE[key];}
-  VIDEOS[key]={num:num,file:fname,bld:d.b,room:d.r,status:"待入库"};
+  const key="file:"+fname;
+  VIDEOS[key]={num:num,file:fname,bld:d.b,room:d.r,status:"待上传"};
   saveVideos();updateQStatus();render();
   toastMsg("已编号 "+num+"："+fname);
-  st.textContent="正在入库…";
-  let wroteFolder=false,cloudOk=false;
-  try{const dir=await getDir();if(dir){const fh=await dir.getFileHandle(fname,{create:true});const w=await fh.createWritable();await w.write(file);await w.close();wroteFolder=true}}catch(e){}
-  try{await fbUpload(file,fname);cloudOk=true;try{await pushRegistry()}catch(e){}}catch(e){}
-  if(wroteFolder){VIDEOS[key].status="已入库";st.textContent="✅ 已进 H 盘"+(cloudOk?"并同步云端":"")+"："+fname+"（编号 "+num+"，右上角已标记）"}
-  else if(cloudOk){VIDEOS[key].status="已同步云端";st.textContent="✅ 已同步云端："+fname+"（编号 "+num+"；电脑端打开网页即自动归档 H 盘）"}
-  else{st.textContent="编号 "+num+" 暂未同步成功，稍后点「🔍 自检一下」重试"}
-  saveVideos();
-  try{await idbPut("queue",key,{num:num,file:fname,bld:d.b,room:d.r,ts:Date.now(),blob:file});QUEUE[key]={num:num,file:fname,bld:d.b,room:d.r};}catch(e){}
-  updateQStatus();render();
+  st.textContent="正在上传云端…";
+  let cloudOk=false,folderOk=false;
+  try{await fbUpload(file,fname);cloudOk=true}catch(e){}
+  try{const dir=await getDir();if(dir){const fh=await dir.getFileHandle(fname,{create:true});const w=await fh.createWritable();await w.write(file);await w.close();folderOk=true}}catch(e){}
+  const k="file:"+fname;
+  if(VIDEOS[k]){
+    if(folderOk&&cloudOk)VIDEOS[k].status="已入库";
+    else if(cloudOk)VIDEOS[k].status="已同步云端";
+  }
+  if(cloudOk){st.textContent="✅ 已同步云端："+fname+"（编号 "+num+"；电脑端网页1分钟内自动出现并归档 H 盘）"}
+  else{st.textContent="❌ 云端上传失败："+fname+"（编号 "+num+"）已留本机，请点「🔍 自检一下」重试"}
+  try{await idbPut("queue",fname,{num:num,file:fname,bld:d.b,room:d.r,ts:Date.now(),blob:file,cloudSynced:cloudOk});QUEUE[fname]={num:num,file:fname,bld:d.b,room:d.r,cloudSynced:cloudOk};}catch(e){}
+  saveVideos();updateQStatus();render();
 }
 async function flushQueue(silent){
   const keys=Object.keys(QUEUE);
-  if(!keys.length){if(!silent){toastMsg("队列是空的：传的都已经进 H 盘、挂到房号上了")}updateQStatus();return}
-  let dir=null;let permErr="";
-  try{dir=await getDir()}catch(e){permErr=(e&&e.message)||""}
-  if(!dir){
-    if(!silent){toastMsg("暂时写不进 H 盘："+(permErr||"请在电脑版浏览器点自检并授权文件夹"))}
-    updateQStatus();return;
-  }
+  if(!keys.length){if(!silent)toastMsg("队列是空的：全部已同步");updateQStatus();return}
+  let dir=null;try{dir=await getDir()}catch(e){dir=null}
   let ok=0;
-  for(const k of keys){
-    const rec=await idbGet("queue",k);
-    if(!rec){delete QUEUE[k];continue}
-    try{
-      const fh=await dir.getFileHandle(rec.file,{create:true});
-      const w=await fh.createWritable();await w.write(rec.blob);await w.close();
-      if(VIDEOS[k])VIDEOS[k].status="已入库";
-      await idbDel("queue",k);delete QUEUE[k];ok++;
-    }catch(e){}
+  for(const fn of keys){
+    const rec=await idbGet("queue",fn);
+    if(!rec){delete QUEUE[fn];continue}
+    if(rec.cloudSynced&&!dir){continue}
+    let cloudOk=!!rec.cloudSynced,folderOk=false;
+    if(!cloudOk){try{await fbUpload(rec.blob,rec.file);cloudOk=true}catch(e){}}
+    if(dir){try{const fh=await dir.getFileHandle(rec.file,{create:true});const w=await fh.createWritable();await w.write(rec.blob);await w.close();folderOk=true}catch(e){}}
+    const k="file:"+rec.file;
+    if(VIDEOS[k])VIDEOS[k].status=folderOk?"已入库":(cloudOk?"已同步云端":"待上传");
+    if(cloudOk&&folderOk){await idbDel("queue",fn);delete QUEUE[fn];ok++}
+    else{rec.cloudSynced=cloudOk;await idbPut("queue",fn,rec);if(QUEUE[fn])QUEUE[fn].cloudSynced=cloudOk}
+    if(cloudOk||folderOk)ok++;
   }
   saveVideos();updateQStatus();render();
-  if(!silent)toastMsg(ok?("已入库 "+ok+" 支到「富哥视频哈」"):"本次没有入库成功，稍后再试");
+  if(!silent)toastMsg(ok?("已同步 "+ok+" 支"):"本次没有同步成功，稍后再试");
 }
 function showQueue(){
   const keys=Object.keys(QUEUE);
   const el=document.getElementById("qlist");
   if(el)el.innerHTML=keys.length
-    ?("待入库："+keys.map(k=>`编号${QUEUE[k].num}·${esc(QUEUE[k].file)}`).join("；"))
-    :"队列是空的：传的都已经进 H 盘、挂到房号上了。";
+    ?("待上传："+keys.map(k=>`编号${QUEUE[k].num}·${esc(k)}`).join("；"))
+    :"队列是空的：全部已同步云端。";
 }
 async function archiveOfflist(){
   const inData=new Set();
   DATA.forEach(b=>b.rooms.forEach(r=>inData.add(vKey(b.b,r.r))));
   let changed=false;
   for(const k in VIDEOS){
-    const inList=inData.has(k);
-    if(inList&&VIDEOS[k].status==="已下架归档"){
-      // 房号重新上架：自动从「富哥视频哈」挂回原编号视频，编号不变，无需重拍
-      VIDEOS[k].status="已入库";changed=true;
-    }
-    if(!inList&&VIDEOS[k].status!=="已下架归档"){
-      // 房号下架：视频编号不变，自动归档保留在「富哥视频哈」，重上架时自动调取
-      VIDEOS[k].status="已下架归档";changed=true;
-    }
+    const v=VIDEOS[k];
+    if(!v||!v.bld||!v.room)continue;
+    const ik=inData.has(vKey(v.bld,v.room));
+    if(ik&&v.status==="已下架归档"){v.status="已入库";changed=true}
+    if(!ik&&v.status!=="已下架归档"){v.status="已下架归档";changed=true}
   }
-  if(changed){saveVideos();try{await pushRegistry()}catch(e){}}
+  if(changed)saveVideos();
   if(qCount()>0){try{await flushQueue(true)}catch(e){}}
 }
 async function resolveVideoUrl(b,r,cur){
-  const key=vKey(b,r);
-  if(QUEUE[key]){const rec=await idbGet("queue",key);if(rec&&rec.blob)return URL.createObjectURL(rec.blob)}
+  if(QUEUE[cur.file]){const rec=await idbGet("queue",cur.file);if(rec&&rec.blob)return URL.createObjectURL(rec.blob)}
   try{const dir=await getDir();if(dir){const fh=await dir.getFileHandle(cur.file);const f=await fh.getFile();return URL.createObjectURL(f)}}catch(e){}
-  try{
-    const rr=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(cur.file),{cache:"no-store"});
-    if(rr.ok&&rr.redirected&&rr.url)return rr.url;
-  }catch(e){}
+  try{const rr=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(cur.file),{cache:"no-store"});if(rr.ok&&rr.redirected&&rr.url)return rr.url}catch(e){}
   return null;
 }
 async function openVideoViewer(b,r){
-  const key=vKey(b,r);const cur=VIDEOS[key];if(!cur)return;
+  const cur=videoFor(b,r);if(!cur)return;
   const ov=document.createElement("div");ov.id="vplayer";
   ov.innerHTML=`
    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;flex-shrink:0">
@@ -554,10 +483,10 @@ async function openVideoViewer(b,r){
    <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0">
     <video id="vv" playsinline webkit-playsinline x5-video-player-type="h5" x5-playsinline x5-video-orientation="portraint" controls preload="metadata" style="max-width:100%;max-height:100%;width:100%;object-fit:contain;background:#000"></video>
    </div>
-   <div style="padding:8px 14px 14px;color:#8fa3a0;font-size:12px;flex-shrink:0">文件：${esc(cur.file)}｜状态：${esc(cur.status||"已入库")}</div>`;
+   <div style="padding:8px 14px 14px;color:#8fa3a0;font-size:12px;flex-shrink:0">文件：${esc(cur.file)}｜状态：${esc(cur.status||"已入库")}｜页面v3</div>`;
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
-  const close=()=>{const v=ov.querySelector("video");if(v){try{v.pause()}catch(e){}}if(v&&v.src.startsWith("blob:"))URL.revokeObjectURL(v.src);ov.remove();document.body.style.overflow="";};
+  const close=()=>{const v=ov.querySelector("video");if(v){try{v.pause()}catch(e){}}if(v&&v.src&&v.src.startsWith("blob:"))URL.revokeObjectURL(v.src);ov.remove();document.body.style.overflow="";};
   ov.querySelector("#vclose").onclick=close;
   const vv=ov.querySelector("#vv");
   (async()=>{
@@ -565,12 +494,63 @@ async function openVideoViewer(b,r){
     if(!ov.isConnected)return;
     if(url){
       vv.src=url;
-      try{await vv.play()}catch(e){/* 浏览器拦截自动播放时，用户点一次播放键即可，不会跳转 */}
+      try{await vv.play()}catch(e){/* 用户点一次播放键即可，不跳转 */}
     }else{
       vv.outerHTML='<div style="color:#cbd5d1;font-size:13px;text-align:center;padding:24px">视频读取失败：文件可能已过期，请点房号右下角 ↻ 重新上传</div>';
     }
   })();
 }
+let videoSyncBusy=false;
+async function videoSyncTick(silent){
+  if(videoSyncBusy)return;videoSyncBusy=true;
+  try{
+    const before=JSON.stringify(Object.values(VIDEOS).map(v=>[v.file,v.status]));
+    const files=await syncFromBin();
+    await syncNewFromCloud(true,files);
+    try{await keepalive()}catch(e){}
+    const after=JSON.stringify(Object.values(VIDEOS).map(v=>[v.file,v.status]));
+    if(after!==before){render();if(!silent)toastMsg("视频库已自动同步")}
+  }catch(e){}finally{videoSyncBusy=false}
+}
+function startVideoSync(){videoSyncTick(true);setInterval(()=>videoSyncTick(false),60000)}
+async function syncNewFromCloud(silent,binFiles){
+  if(!binFiles){try{binFiles=await fetchBinFiles()}catch(e){return}}
+  let dir=null;try{dir=await getDir()}catch(e){dir=null}
+  let canWrite=false;
+  if(dir){try{canWrite=(await dir.queryPermission({mode:"readwrite"}))==="granted"}catch(e){canWrite=false}}
+  let fresh=0;
+  for(const fn of binFiles){
+    if(SYNCED[fn])continue;
+    if(!canWrite){SYNCED[fn]=1;continue}
+    let exists=false;
+    try{await dir.getFileHandle(fn);exists=true}catch(e){exists=false}
+    if(exists){const k="file:"+fn;if(VIDEOS[k]&&VIDEOS[k].status!=="已入库")VIDEOS[k].status="已入库";SYNCED[fn]=1;continue}
+    try{
+      const rr=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(fn),{cache:"no-store"});
+      if(!rr.ok||!rr.redirected){SYNCED[fn]=1;continue}
+      const blob=await rr.blob();
+      if(blob.size<10000){SYNCED[fn]=1;continue}
+      const fh=await dir.getFileHandle(fn,{create:true});
+      const w=await fh.createWritable();await w.write(blob);await w.close();
+      const k="file:"+fn;if(VIDEOS[k])VIDEOS[k].status="已入库";
+      SYNCED[fn]=1;fresh++;
+    }catch(e){}
+  }
+  if(fresh>0){saveVideos();updateQStatus();render();if(!silent)toastMsg("已自动归档 "+fresh+" 支视频进「富哥视频哈」")}
+}
+async function selfCheck(){
+  const st=document.getElementById("vst");
+  if(st)st.textContent="自检中…";
+  try{await syncFromBin()}catch(e){}
+  await flushQueue(false);
+  try{await syncNewFromCloud(true)}catch(e){}
+  try{await keepalive()}catch(e){}
+  const n=qCount();
+  const msg="✅ 自检完成："+(n?("待上传 "+n+" 支（网络恢复后重试，或检查网络）"):"全部已同步：云端+H 盘+网页");
+  if(st)st.textContent=msg;else toastMsg(msg);
+  updateQStatus();
+}
+
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("open")});
 const chipBox=document.getElementById("catChips");
 CATEGORIES.forEach(c=>{
@@ -614,7 +594,7 @@ function fallback(text,done){
 }
 syncFloorUI();
 render();
-loadQueue().then(async()=>{try{await mergeRemoteRegistry()}catch(e){}render();archiveOfflist();startVideoSync()});
+loadQueue().then(async()=>{try{await syncFromBin()}catch(e){}render();archiveOfflist();startVideoSync()});
 </script>
 </body>
 </html>
