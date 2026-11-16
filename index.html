@@ -341,7 +341,7 @@ function openUpload(d,replace){
    <input type="file" id="fcap" accept="video/*" capture="environment" style="display:none">
    <input type="file" id="fpick" accept="video/*" style="display:none">
    <div style="font-size:12px;color:var(--sub);margin-top:10px">选好就开始传，传完自动编号上架。</div>
-   <div style="font-size:12px;color:var(--sub);margin-top:6px">保存位置：电脑→直接写入「富哥视频哈」(H盘)；手机→同步云端，电脑端每日12:30任务自动下载进 H 盘</div>
+   <div style="font-size:12px;color:var(--sub);margin-top:6px">保存位置：电脑→直接写入「富哥视频哈」(H盘)；手机→同步云端，电脑端打开网页即自动归档 H 盘</div>
    <div style="font-size:12px;color:var(--sub);margin-top:6px">页面版呆？ → 传不上就点下面 🔍 自检一下</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
     <button id="chk" class="qbtn">🔍 自检一下</button>
@@ -403,6 +403,52 @@ async function syncPendingCloud(silent){
   if(ok){saveVideos();try{await pushRegistry()}catch(e){}render()}
   return ok;
 }
+/* ===== 上传即同步：轮询云端登记表，新视频自动归档 H 盘并上墙 ===== */
+const SYNCED={};let SYNCING=false;
+async function syncNewFromCloud(silent){
+  let dir=null;
+  try{dir=await getDir()}catch(e){dir=null}
+  let canWrite=false;
+  if(dir){try{canWrite=(await dir.queryPermission({mode:"readwrite"}))==="granted"}catch(e){canWrite=false}}
+  let fresh=0;
+  for(const k in VIDEOS){
+    const v=VIDEOS[k];
+    if(!v||!v.file||SYNCED[v.file])continue;
+    if(canWrite){
+      let exists=false;
+      try{await dir.getFileHandle(v.file);exists=true}catch(e){exists=false}
+      if(exists){if(v.status!=="已入库")v.status="已入库";SYNCED[v.file]=1;continue}
+      try{
+        const rr=await fetch("https://filebin.net/"+FB_BIN+"/"+encodeURIComponent(v.file),{cache:"no-store"});
+        if(!rr.ok||!rr.redirected){SYNCED[v.file]=1;continue}
+        const blob=await rr.blob();
+        if(blob.size<10000){SYNCED[v.file]=1;continue}
+        const fh=await dir.getFileHandle(v.file,{create:true});
+        const w=await fh.createWritable();await w.write(blob);await w.close();
+        v.status="已入库";SYNCED[v.file]=1;fresh++;
+      }catch(e){}
+    }else{
+      SYNCED[v.file]=1;
+    }
+  }
+  if(fresh>0){
+    saveVideos();try{await pushRegistry()}catch(e){}
+    updateQStatus();render();
+    if(!silent)toastMsg("已自动同步 "+fresh+" 支视频进「富哥视频哈」");
+  }
+}
+let videoSyncBusy=false;
+async function videoSyncTick(silent){
+  if(videoSyncBusy)return;videoSyncBusy=true;
+  try{
+    const before=JSON.stringify(Object.values(VIDEOS).map(v=>[v.file,v.status]));
+    await mergeRemoteRegistry();
+    await syncNewFromCloud(true);
+    const after=JSON.stringify(Object.values(VIDEOS).map(v=>[v.file,v.status]));
+    if(after!==before){render();if(!silent)toastMsg("视频库已自动同步")}
+  }catch(e){}finally{videoSyncBusy=false}
+}
+function startVideoSync(){videoSyncTick(true);setInterval(()=>videoSyncTick(false),60000)}
 async function selfCheck(){
   const st=document.getElementById("vst");
   if(st)st.textContent="自检中…";
@@ -410,7 +456,7 @@ async function selfCheck(){
   const ok=await syncPendingCloud(true);
   try{await pushRegistry()}catch(e){}
   const n=qCount();
-  const msg="✅ 自检完成："+(ok?("云端新同步 "+ok+" 支；"):"")+(n?("待入库 "+n+" 支，电脑端每日12:30任务自动下载进 H 盘"):"H 盘与云端均已就绪");
+  const msg="✅ 自检完成："+(ok?("云端新同步 "+ok+" 支；"):"")+(n?("待入库 "+n+" 支，电脑端打开网页即自动归档 H 盘"):"H 盘与云端均已就绪");
   if(st)st.textContent=msg;else toastMsg(msg);
   updateQStatus();
 }
@@ -432,7 +478,7 @@ async function handleVideoFile(d,file){
   try{const dir=await getDir();if(dir){const fh=await dir.getFileHandle(fname,{create:true});const w=await fh.createWritable();await w.write(file);await w.close();wroteFolder=true}}catch(e){}
   try{await fbUpload(file,fname);cloudOk=true;try{await pushRegistry()}catch(e){}}catch(e){}
   if(wroteFolder){VIDEOS[key].status="已入库";st.textContent="✅ 已进 H 盘"+(cloudOk?"并同步云端":"")+"："+fname+"（编号 "+num+"，右上角已标记）"}
-  else if(cloudOk){VIDEOS[key].status="已同步云端";st.textContent="✅ 已同步云端："+fname+"（编号 "+num+"；电脑端每日12:30任务自动下载进 H 盘）"}
+  else if(cloudOk){VIDEOS[key].status="已同步云端";st.textContent="✅ 已同步云端："+fname+"（编号 "+num+"；电脑端打开网页即自动归档 H 盘）"}
   else{st.textContent="编号 "+num+" 暂未同步成功，稍后点「🔍 自检一下」重试"}
   saveVideos();
   try{await idbPut("queue",key,{num:num,file:fname,bld:d.b,room:d.r,ts:Date.now(),blob:file});QUEUE[key]={num:num,file:fname,bld:d.b,room:d.r};}catch(e){}
@@ -568,7 +614,7 @@ function fallback(text,done){
 }
 syncFloorUI();
 render();
-loadQueue().then(async()=>{try{await mergeRemoteRegistry()}catch(e){}render();archiveOfflist()});
+loadQueue().then(async()=>{try{await mergeRemoteRegistry()}catch(e){}render();archiveOfflist();startVideoSync()});
 </script>
 </body>
 </html>
